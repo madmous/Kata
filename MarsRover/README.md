@@ -1,4 +1,4 @@
-Project bootstraped with [Node Flotype Boilerplate](https://github.com/jsynowiec/node-flowtype-boilerplate)
+Project bootstraped with [Node Flowtype Boilerplate](https://github.com/jsynowiec/node-flowtype-boilerplate)
 
 # Mars rover - 3 sessions (1h per session)
 
