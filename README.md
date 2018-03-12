@@ -29,6 +29,7 @@ There are 3 sessions each with a very specific goal
 ## Ressources
 
 + [Clean code Javascript](https://github.com/ryanmcdermott/clean-code-javascript)
++ [Airbnb Javascript style guide](https://github.com/airbnb/javascript)
 + [Katas For Functional Calisthenics](https://codurance.com/2017/11/16/katas-for-functional-calisthenics/#marsroverkata)
 
 ## License
