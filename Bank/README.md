@@ -15,9 +15,9 @@
 
 ### No mutable state
 
-### Functions should be 50 lines long
+### Functions should be max 50 lines long
 
-### Test functions should be 30 lines long
+### Test functions should be max 30 lines long
 
 ### One assertion per test
 

@@ -57,6 +57,7 @@
     "collectCoverageFrom": ["src/**/*.js"]
   },
   "dependencies": {
-    "babel-runtime": "~6.26.0"
+    "babel-runtime": "~6.26.0",
+    "moment": "^2.21.0"
   }
 }
