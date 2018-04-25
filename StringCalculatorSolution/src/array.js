@@ -23,3 +23,9 @@ type Filter<A> = (
 ) => (array: A[]) => A[];
 export const filter: Filter<*> = predicate => array =>
   array.filter(predicate);
+
+
+type FindIndex<A> = (
+  predicate: UnaryFonction<A, boolean>
+) => (array: A[]) => number;
+export const findIndex: FindIndex<*> = f => array => array.findIndex(f);

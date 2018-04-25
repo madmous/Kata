@@ -1,72 +1,90 @@
 /** @flow */
-import R from 'ramda';
+import { pipe } from 'ramda';
 
-import { into, toMaybeWhenEmpty } from './folktale';
-import { filter, map, reduce } from './array';
-import { split } from './string';
+import { getValueOrFail, into, Result } from './folktale';
+import { findIndex, filter, map, reduce } from './array';
+import { indexOf, split } from './string';
 
-type ThrowWhenANumberIsNegative = (array: number[]) => number[];
-const throwWhenANumberIsNegative: ThrowWhenANumberIsNegative = array => {
+type CheckForNegativeNumbers = (array: number[]) => Result<string, number[]>;
+const checkForNegativeNumbers: CheckForNegativeNumbers = array => {
   const isNumberNegative = number => number < 0;
-  const negativeNumberIndex = array.findIndex(isNumberNegative);
-
-  if (negativeNumberIndex === -1) {
-    return array;
-  } else {
-    throw new Error('negatives not allowed');
-  }
-};
-
-type GetSeparators = (delimiterIndex: number) => (string: string) => string;
-const getSeparators: GetSeparators = delimiterIndex => string => {
-  if (delimiterIndex === -1) {
-    return '\n';
-  } else {
-    const [delimeter] = string.split('\n');
-    if (delimeter.charAt(2) === '[') {
-      return '***';
+  const negativeNumberIndex = findIndex(isNumberNegative);
+  const createResult = negativeNumberIndex => {
+    if (negativeNumberIndex === -1) {
+      return Result.Ok(array);
     } else {
-      return delimeter.charAt(2);
+      return Result.Error('negatives not allowed');
     }
-  }
+  };
+
+  return pipe(negativeNumberIndex, createResult)(array);
 };
 
-type CreateSanitizeSeparators = (
-  delimiterIndex: number
-) => (string: string) => (string: string) => string;
-const createSanitizeSeparators: CreateSanitizeSeparators = delimiterIndex => separator => string => {
-  if (delimiterIndex === -1) {
-    return string.replace(separator, ',');
-  } else {
-    const [_, numbers] = string.split('\n');
-    return numbers.replace(separator, ',');
-  }
+opaque type Number = number[];
+type ToNumber = (character: Character) => Number;
+const toNumber: ToNumber = character => {
+  const sanitizeSeparators = character => {
+    const { delimeter, characters } = character;
+    return characters.replace(delimeter, ',');
+  };
+  const toNumbers = map(characters => parseInt(characters));
+  const splitCommas = split(',');
+
+  return pipe(sanitizeSeparators, splitCommas, toNumbers)(character);
 };
 
-type AddNumbers = (string: string) => number;
-const addNumbers: AddNumbers = string => {
-  const delimiterIndex = string.indexOf('//');
+opaque type Character = {
+  delimeter: string,
+  characters: string,
+};
+type ToCharacter = (userInput: string) => Character;
+const toCharacter: ToCharacter = userInput => {
+  const DELIMITER = '//';
+  const createCharacter = delimiterIndex => {
+    switch (delimiterIndex) {
+      case -1:
+        return {
+          delimeter: '\n',
+          characters: userInput,
+        };
+      default: {
+        const [delimeter, newCharacters] = split('\n')(userInput);
+        return {
+          delimeter: delimeter.charAt(2),
+          characters: newCharacters,
+        };
+      }
+    }
+  };
+  const findDelimiterIndex = userInput => indexOf(DELIMITER)(userInput);
+  const fillWithZeroIfEmpty = userInput => {
+    switch (userInput.length) {
+      case '0':
+        return '0';
+      default:
+        return userInput;
+    }
+  };
 
-  const sanitizeSeparators = R.pipe(
-    getSeparators(delimiterIndex),
-    createSanitizeSeparators(delimiterIndex)
-  )(string);
+  return pipe(fillWithZeroIfEmpty, findDelimiterIndex, createCharacter)(
+    userInput
+  );
+};
 
-  const toNumbers = map(string => parseInt(string));
-  const filterBigNumbers = filter(number => number < 1000);
-  const reduceNumbers = reduce((acc, number) => acc + number)(0);
+type AddNumbers = (characters: string) => number;
+const addNumbers: AddNumbers = characters => {
+  const BIG_NUMBERS = 1000;
+  const filterBigNumbers = filter(number => number < BIG_NUMBERS);
+  const arraySsum = reduce((acc, number) => acc + number)(0);
 
-  const sum = R.pipe(
-    toMaybeWhenEmpty,
-    into(sanitizeSeparators),
-    into(split),
-    into(toNumbers),
-    into(throwWhenANumberIsNegative),
+  return pipe(
+    toCharacter,
+    toNumber,
+    checkForNegativeNumbers,
     into(filterBigNumbers),
-    into(reduceNumbers)
-  )(string);
-
-  return sum.getOrElse(0);
+    into(arraySsum),
+    getValueOrFail
+  )(characters);
 };
 
 export { addNumbers as default };
