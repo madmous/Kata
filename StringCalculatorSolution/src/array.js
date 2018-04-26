@@ -29,3 +29,12 @@ type FindIndex<A> = (
   predicate: UnaryFonction<A, boolean>
 ) => (array: A[]) => number;
 export const findIndex: FindIndex<*> = f => array => array.findIndex(f);
+
+type Fill<A> = (value: A) => (array: A[]) => A[];
+export const fill: Fill<*> = value => array => array.fill(value);
+
+type Join<A> = (value: A) => (array: A[]) => A;
+export const join: Join<*> = value => array => array.join(value);
+
+type CreateArray = (length: number) => Array<*>;
+export const createArray: CreateArray = length => new Array(length);
