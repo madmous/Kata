@@ -11,3 +11,6 @@ export const replace: Repalce = separator => delimeter => characters => characte
 
 type CharAt = (index: number) => (characters: string) => string;
 export const charAt: CharAt = index => characters => characters.charAt(index);
+
+type Slice = (beg: number) => (end: number) => (characters: string) => string;
+export const slice: Slice = beg => end => characters => characters.slice(beg, end);

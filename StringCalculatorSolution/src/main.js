@@ -2,16 +2,8 @@
 import { pipe } from 'ramda';
 
 import { getValueOrFail, into, Result } from './folktale';
-import {
-  createArray,
-  findIndex,
-  fill,
-  filter,
-  join,
-  map,
-  reduce,
-} from './array';
-import { charAt, indexOf, replace, split } from './string';
+import { findIndex, filter, join, map, reduce } from './array';
+import { charAt, slice, split } from './string';
 
 type CheckForNegativeNumbers = (array: number[]) => Result<string, number[]>;
 const checkForNegativeNumbers: CheckForNegativeNumbers = array => {
@@ -28,73 +20,68 @@ const checkForNegativeNumbers: CheckForNegativeNumbers = array => {
   return pipe(getNegativeNumberIndex, createResult)(array);
 };
 
-type ToNumber = (character: Character) => number[];
-const toNumber: ToNumber = character => {
-  const SEPARATOR = ',';
+type ExtractNumberFrom = (string: string) => string;
+const extractNumberFrom: ExtractNumberFrom = string => {
+  const [head, last] = split('\n')(string);
+  const [_, delimiter] = split('//')(head);
 
-  const { delimiter, characters } = character;
-  const toNumbers = map(characters => parseInt(characters));
-  const splitCommas = split(SEPARATOR);
-  const sanitizeSeparators = replace(SEPARATOR)(delimiter);
+  const getNewDelimiterIfNeeded = delimiter => {
+    const firstChar = charAt(0)(delimiter);
 
-  return pipe(sanitizeSeparators, splitCommas, toNumbers)(characters);
-};
-
-type Character = {
-  delimiter: string,
-  characters: string,
-};
-type ToCharacter = (input: string) => Character;
-const toCharacter: ToCharacter = input => {
-  const DELIMITER_PREFIX = '//';
-  const NEW_LINE_DELIMITER = '\n';
-
-  const createCharacter = delimiterIndex => {
-    if (delimiterIndex === -1) {
-      return {
-        delimiter: NEW_LINE_DELIMITER,
-        characters: input,
-      };
+    if (firstChar === '[') {
+      return split(slice(1)(-1)(delimiter));
     } else {
-      const extractDelimiter = ([delimiter, newCharacters]) => {
-        const [_, newDelimeter] = split(DELIMITER_PREFIX)(delimiter);
-        return {
-          delimiter: newDelimeter,
-          characters: newCharacters,
-        };
-      };
-
-      return pipe(
-        split(NEW_LINE_DELIMITER),
-        extractDelimiter
-      )(input);
+      return split(delimiter);
     }
   };
-  const findDelimiterIndex = input => indexOf(DELIMITER_PREFIX)(input);
-  const fillWithZeroIfEmpty = input => {
-    if (input.length === '0') {
-      return '0';
-    } else {
-      return input;
-    }
-  };
+  
+  if (delimiter) {
+    return pipe(
+      getNewDelimiterIfNeeded(delimiter),
+      join(','),
+    )(last);
+  } else {
+    return string;
+  }
+};
 
-  return pipe(fillWithZeroIfEmpty, findDelimiterIndex, createCharacter)(input);
+type ReplaceNewLines = (delimiter: string) => (string: string) => string;
+const replaceWith: ReplaceNewLines = delimiter => string => {
+  return pipe(
+    split(''),
+    map(s => {
+      if (s === delimiter) {
+        return ',';
+      } else {
+        return s;
+      }
+    }),
+    join('')
+  )(string);
+};
+
+type FillWithZeroWhenEmpty = (input: string) => string;
+const fillWithZeroWhenEmpty: FillWithZeroWhenEmpty = input => {
+  if (input.length === 0) {
+    return '0';
+  } else {
+    return input;
+  }
 };
 
 type AddNumbers = (input: string) => number;
 const addNumbers: AddNumbers = input => {
   const BIG_NUMBERS = 1000;
-
-  const filterBigNumbers = filter(number => number < BIG_NUMBERS);
-  const arraySum = reduce((acc, number) => acc + number)(0);
-
+  
   return pipe(
-    toCharacter,
-    toNumber,
+    fillWithZeroWhenEmpty,
+    extractNumberFrom,
+    replaceWith('\n'),
+    split(','),
+    map(val => parseInt(val)),
     checkForNegativeNumbers,
-    into(filterBigNumbers),
-    into(arraySum),
+    into(filter(number => number < BIG_NUMBERS)),
+    into(reduce((acc, number) => acc + number)(0)),
     getValueOrFail
   )(input);
 };

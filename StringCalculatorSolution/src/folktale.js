@@ -9,7 +9,7 @@ export const applyToMaybeString: ApplyToMaybeString<*, *> = f => value =>
   value.length === 0 ? Maybe.Nothing() : Maybe.Just(f(value));
 
 type GetValueOrFail<A,B> = (result: Result<A,B>) => A;
-export const getValueOrFail: GetValueOrFail = result => {
+export const getValueOrFail: GetValueOrFail<*,*> = result => {
   const value = result.matchWith({
     Ok:    ({ value }) => value,
     Error: ({ value }) => {

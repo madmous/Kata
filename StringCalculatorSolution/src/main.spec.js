@@ -68,7 +68,7 @@ describe('Add numbers', () => {
     expect(sum).toEqual(1);
   });
 
-  xit('should handle delimeter of any length', () => {
+  it('should handle delimeter of any length', () => {
     //given
     const numbers = '//[***]\n1***2***3';
 
