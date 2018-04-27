@@ -16,29 +16,29 @@ describe('Add numbers', () => {
 
   it('should handle an unknown amount of numbers', () => {
     //given
-    const numbers = '1,2,3,2,1';
+    const numbers = '10,2,3,2,1';
 
     //when
     const sum = addNumbers(numbers);
 
     //then
-    expect(sum).toEqual(9);
+    expect(sum).toEqual(18);
   });
 
   it('should handle handle new lines between numbers', () => {
     //given
-    const numbers = '1\n2,3';
+    const numbers = '1\n2,10';
 
     //when
     const sum = addNumbers(numbers);
 
     //then
-    expect(sum).toEqual(6);
+    expect(sum).toEqual(13);
   });
 
   it('should handle delimeter changes', () => {
     //given
-    const numbers = '//;\n1;2';
+    const numbers = '//8\n182';
 
     //when
     const sum = addNumbers(numbers);
@@ -70,7 +70,18 @@ describe('Add numbers', () => {
 
   it('should handle delimeter of any length', () => {
     //given
-    const numbers = '//[***]\n1***2***3';
+    const numbers = '//[***]\n1***20***3';
+
+    //when
+    const sum = addNumbers(numbers);
+
+    //then
+    expect(sum).toEqual(24);
+  });
+
+  xit('should handle multiple delimiters', () => {
+    //given
+    const numbers = '//[*][%]\n1*2%3';
 
     //when
     const sum = addNumbers(numbers);

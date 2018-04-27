@@ -1,9 +1,9 @@
 /** @flow */
-import { pipe } from 'ramda';
+import { pipe, without } from 'ramda';
 
 import { getValueOrFail, into, Result } from './folktale';
 import { findIndex, filter, join, map, reduce } from './array';
-import { charAt, slice, split } from './string';
+import { split } from './string';
 
 type Sum = (numbers: number[]) => number;
 const sum: Sum = numbers => reduce((acc, number) => acc + number)(0)(numbers);
@@ -30,9 +30,13 @@ const checkForNegativeNumbers: CheckForNegativeNumbers = array => {
 };
 
 type ToInt = (strings: string[]) => number[];
-const toInt: ToInt = strings => map(val => parseInt(val))(strings);
+const toInt: ToInt = strings => {
+  return map(val => parseInt(val))(strings);
+};
 
-type ReplaceNewLines = (newDelimiter: string) => (delimiter: string) => (string: string[]) => string[];
+type ReplaceNewLines = (
+  newDelimiter: string
+) => (delimiter: string) => (string: string[]) => string[];
 const replaceNewLinesWith: ReplaceNewLines = newDelimiter => delimiter => string =>
   map(string => {
     if (string === delimiter) {
@@ -43,24 +47,30 @@ const replaceNewLinesWith: ReplaceNewLines = newDelimiter => delimiter => string
   })(string);
 
 type SanitizeNumber = (
+  commaSeparator: string
+) => (
   newLineDelimiter: string
 ) => (prefixDelimitor: string) => (string: string) => string;
-const sanitizeNumber: SanitizeNumber = newLineDelimiter => prefixDelimitor => string => {
-  const [head, last] = split(newLineDelimiter)(string);
-  const [_, delimiter] = split(prefixDelimitor)(head);
+const sanitizeNumber: SanitizeNumber = commaSeparator => newLineDelimiter => prefixDelimitor => string => {
+  const removeBracketsFrom = string => join('')(without(['[', ']'], string));
 
-  const getNewDelimiterIfNecessary = delimiter => {
-    const firstChar = charAt(0)(delimiter);
+  const [head, rest] = split(newLineDelimiter)(string);
+  const [_, tail] = split(prefixDelimitor)(head);
 
-    if (firstChar === '[') {
-      return pipe(slice(1)(-1), split)(delimiter);
-    } else {
-      return split(delimiter);
-    }
-  };
+  if (tail) {
+    const hh = pipe(
+      split(removeBracketsFrom(tail)),
+      map(s => {
+        if (typeof parseInt(s) === 'number') {
+          return s;
+        } else {
+          return commaSeparator;
+        }
+      }),
+      join(commaSeparator)
+    )(rest);
 
-  if (delimiter) {
-    return pipe(getNewDelimiterIfNecessary(delimiter), join(','))(last);
+    return hh;
   } else {
     return string;
   }
@@ -85,7 +95,7 @@ const addNumbers: AddNumbers = input => {
 
   return pipe(
     fillWithZeroWhenEmpty,
-    sanitizeNumber(NEW_LINE_DELIMITER)(PREFIX_DELIMITOR),
+    sanitizeNumber(COMMA_SEPARATOR)(NEW_LINE_DELIMITER)(PREFIX_DELIMITOR),
     split(EMPTY_SEPRATOR),
     replaceNewLinesWith(COMMA_SEPARATOR)(NEW_LINE_DELIMITER),
     join(EMPTY_SEPRATOR),
