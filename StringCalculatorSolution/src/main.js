@@ -63,22 +63,33 @@ type SanitizeNumber = (
   newLineDelimiter: string
 ) => (prefixDelimitor: string) => (string: string) => string;
 const sanitizeNumber: SanitizeNumber = commaSeparator => newLineDelimiter => prefixDelimitor => string => {
+  const removeDelimiter = separator => string => split(separator)(string);
   const removeBracketsFrom = string =>
     pipe(without(['[', ']']), join(''))(string);
-  const removeDelimiter = separator => string => split(separator)(string);
-  const getNewString = rest => tail => {
+  const createNumber = rest => tail => {
     const delimiter = removeBracketsFrom(tail);
     return pipe(removeDelimiter(delimiter), join(commaSeparator))(rest);
   };
+  const createNumberIfNecessary = ({ rest, tail }) => {
+    if (tail === undefined) {
+      return string;
+    } else {
+      return createNumber(rest)(tail);
+    }
+  };
+  const getNumberAndDelimiterWithItsPrefix = string => {
+    const [head, rest] = split(newLineDelimiter)(string);
+    const [_, tail] = split(prefixDelimitor)(head);
 
-  const [head, rest] = split(newLineDelimiter)(string);
-  const [_, tail] = split(prefixDelimitor)(head);
+    return {
+      rest,
+      tail,
+    };
+  };
 
-  if (tail === undefined) {
-    return string;
-  } else {
-    return getNewString(rest)(tail);
-  }
+  return pipe(getNumberAndDelimiterWithItsPrefix, createNumberIfNecessary)(
+    string
+  );
 };
 
 type FillWithZeroWhenEmpty = (input: string) => string;

@@ -25,7 +25,7 @@ describe('Add numbers', () => {
     expect(sum).toEqual(18);
   });
 
-  it.only('should handle handle new lines between numbers', () => {
+  it('should handle handle new lines between numbers', () => {
     //given
     const numbers = '1\n2,10';
 
