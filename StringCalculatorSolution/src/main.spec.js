@@ -25,7 +25,7 @@ describe('Add numbers', () => {
     expect(sum).toEqual(18);
   });
 
-  it('should handle handle new lines between numbers', () => {
+  it.only('should handle handle new lines between numbers', () => {
     //given
     const numbers = '1\n2,10';
 
@@ -81,7 +81,7 @@ describe('Add numbers', () => {
 
   xit('should handle multiple delimiters', () => {
     //given
-    const numbers = '//[*][%]\n1*2%3';
+    const numbers = '//[**][6]\n1**263';
 
     //when
     const sum = addNumbers(numbers);

@@ -63,21 +63,21 @@ type SanitizeNumber = (
   newLineDelimiter: string
 ) => (prefixDelimitor: string) => (string: string) => string;
 const sanitizeNumber: SanitizeNumber = commaSeparator => newLineDelimiter => prefixDelimitor => string => {
-  const removeBracketsFrom = string => pipe(without(['[', ']']), join(''))(string);
+  const removeBracketsFrom = string =>
+    pipe(without(['[', ']']), join(''))(string);
   const removeDelimiter = separator => string => split(separator)(string);
+  const getNewString = rest => tail => {
+    const delimiter = removeBracketsFrom(tail);
+    return pipe(removeDelimiter(delimiter), join(commaSeparator))(rest);
+  };
 
   const [head, rest] = split(newLineDelimiter)(string);
   const [_, tail] = split(prefixDelimitor)(head);
 
-  if (tail !== undefined) {
-    const delimiter = removeBracketsFrom(tail);
-
-    return pipe(
-      removeDelimiter(delimiter),
-      join(commaSeparator),
-    )(rest);
-  } else {
+  if (tail === undefined) {
     return string;
+  } else {
+    return getNewString(rest)(tail);
   }
 };
 
