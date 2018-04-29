@@ -24,7 +24,7 @@ const filterBigNumbers: FilterBigNumbers = valueToFilter => numbers =>
 type CheckForNegativeNumbers = (array: number[]) => Result<string, number[]>;
 const checkForNegativeNumbers: CheckForNegativeNumbers = array => {
   const isNumberNegative = number => number < 0;
-  const getNegativeNumberIndex = findIndex(isNumberNegative);
+  const getNegativeNumberIndex = array => findIndex(isNumberNegative)(array);
   const createResult = negativeNumberIndex => {
     if (negativeNumberIndex === -1) {
       return Result.Ok(array);
@@ -47,7 +47,7 @@ const filterCommas: FilterCommas = commaSeparator => emptySeparator => strings =
 
 type ReplaceNewLines = (
   commaSeparator: string
-) => (newLineDelimiter: string) => (string: string[]) => string[];
+) => (newLineDelimiter: string) => (string: string) => string;
 const replaceNewLinesWith: ReplaceNewLines = commaSeparator => newLineDelimiter => string =>
   map(string => {
     if (string === newLineDelimiter) {
@@ -63,25 +63,19 @@ type SanitizeNumber = (
   newLineDelimiter: string
 ) => (prefixDelimitor: string) => (string: string) => string;
 const sanitizeNumber: SanitizeNumber = commaSeparator => newLineDelimiter => prefixDelimitor => string => {
-  const removeBracketsFrom = string => join('')(without(['[', ']'], string));
+  const removeBracketsFrom = string => pipe(without(['[', ']']), join(''))(string);
+  const removeDelimiter = separator => string => split(separator)(string);
 
   const [head, rest] = split(newLineDelimiter)(string);
   const [_, tail] = split(prefixDelimitor)(head);
 
-  if (tail) {
-    const hh = pipe(
-      split(removeBracketsFrom(tail)),
-      map(s => {
-        if (typeof parseInt(s) === 'number') {
-          return s;
-        } else {
-          return commaSeparator;
-        }
-      }),
-      join(commaSeparator)
-    )(rest);
+  if (tail !== undefined) {
+    const delimiter = removeBracketsFrom(tail);
 
-    return hh;
+    return pipe(
+      removeDelimiter(delimiter),
+      join(commaSeparator),
+    )(rest);
   } else {
     return string;
   }
@@ -107,7 +101,6 @@ const addNumbers: AddNumbers = input => {
   return pipe(
     fillWithZeroWhenEmpty,
     sanitizeNumber(COMMA_SEPARATOR)(NEW_LINE_DELIMITER)(PREFIX_DELIMITOR),
-    split(EMPTY_SEPRATOR),
     replaceNewLinesWith(COMMA_SEPARATOR)(NEW_LINE_DELIMITER),
     filterCommas(COMMA_SEPARATOR)(EMPTY_SEPRATOR),
     toInt,
