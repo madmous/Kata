@@ -37,16 +37,20 @@ const checkForNegativeNumbers: CheckForNegativeNumbers = array => {
 };
 
 type ToInt = (strings: string[]) => number[];
-const toInt: ToInt = strings => {
-  return map(val => parseInt(val))(strings);
-};
+const toInt: ToInt = strings => map(val => parseInt(val))(strings);
+
+type FilterCommas = (
+  commaSeparator: string
+) => (emptySeparator: string) => (strings: string[]) => string[];
+const filterCommas: FilterCommas = commaSeparator => emptySeparator => strings =>
+  pipe(join(emptySeparator), split(commaSeparator))(strings);
 
 type ReplaceNewLines = (
   commaSeparator: string
-) => (delimiter: string) => (string: string[]) => string[];
-const replaceNewLinesWith: ReplaceNewLines = commaSeparator => delimiter => string =>
+) => (newLineDelimiter: string) => (string: string[]) => string[];
+const replaceNewLinesWith: ReplaceNewLines = commaSeparator => newLineDelimiter => string =>
   map(string => {
-    if (string === delimiter) {
+    if (string === newLineDelimiter) {
       return commaSeparator;
     } else {
       return string;
@@ -105,8 +109,7 @@ const addNumbers: AddNumbers = input => {
     sanitizeNumber(COMMA_SEPARATOR)(NEW_LINE_DELIMITER)(PREFIX_DELIMITOR),
     split(EMPTY_SEPRATOR),
     replaceNewLinesWith(COMMA_SEPARATOR)(NEW_LINE_DELIMITER),
-    join(EMPTY_SEPRATOR),
-    split(COMMA_SEPARATOR),
+    filterCommas(COMMA_SEPARATOR)(EMPTY_SEPRATOR),
     toInt,
     checkForNegativeNumbers,
     into(filterBigNumbers(BIG_NUMBERS)),
