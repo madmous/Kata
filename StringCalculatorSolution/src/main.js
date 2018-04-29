@@ -1,9 +1,16 @@
 /** @flow */
-import { pipe, without } from 'ramda';
+import {
+  findIndex,
+  filter,
+  join,
+  map,
+  pipe,
+  reduce,
+  split,
+  without,
+} from 'ramda';
 
 import { getValueOrFail, into, Result } from './folktale';
-import { findIndex, filter, join, map, reduce } from './array';
-import { split } from './string';
 
 type Sum = (numbers: number[]) => number;
 const sum: Sum = numbers => reduce((acc, number) => acc + number)(0)(numbers);
@@ -35,12 +42,12 @@ const toInt: ToInt = strings => {
 };
 
 type ReplaceNewLines = (
-  newDelimiter: string
+  commaSeparator: string
 ) => (delimiter: string) => (string: string[]) => string[];
-const replaceNewLinesWith: ReplaceNewLines = newDelimiter => delimiter => string =>
+const replaceNewLinesWith: ReplaceNewLines = commaSeparator => delimiter => string =>
   map(string => {
     if (string === delimiter) {
-      return newDelimiter;
+      return commaSeparator;
     } else {
       return string;
     }
