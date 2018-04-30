@@ -1,9 +1,8 @@
 /** @flow */
 
-type Execute = () => void;
-
-const execute: Execute = () => {
+type AddNumbers = (input: string) => number;
+const addNumbers: AddNumbers = input => {
   throw new Error('Not implemented yet');
 };
 
-export { execute };
+export { addNumbers as default };
