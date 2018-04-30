@@ -8,11 +8,12 @@ import {
   pipe,
   reduce,
   split,
+  startsWith,
   without,
 } from 'ramda';
 
-import { getValueOrFail, into, Result } from './folktale';
-import log from './log';
+import { getValueOrFail, into, Maybe, Result } from './folktale';
+// import log from './log';
 
 type Sum = (numbers: number[]) => number;
 const sum: Sum = numbers => reduce((acc, number) => acc + number)(0)(numbers);
@@ -27,7 +28,7 @@ type CheckForNegativeNumbers = (array: number[]) => Result<string, number[]>;
 const checkForNegativeNumbers: CheckForNegativeNumbers = array => {
   const isNumberNegative = number => number < 0;
   const getNegativeNumberIndex = array => findIndex(isNumberNegative)(array);
-  const createResult = negativeNumberIndex => {
+  const toResult = negativeNumberIndex => {
     if (negativeNumberIndex === -1) {
       return Result.Ok(array);
     } else {
@@ -35,7 +36,7 @@ const checkForNegativeNumbers: CheckForNegativeNumbers = array => {
     }
   };
 
-  return pipe(getNegativeNumberIndex, createResult)(array);
+  return pipe(getNegativeNumberIndex, toResult)(array);
 };
 
 type ToInt = (strings: string[]) => number[];
@@ -45,63 +46,79 @@ type FilterWith = (separator: string) => (strings: string[]) => string[];
 const filterWith: FilterWith = separator => strings =>
   pipe(join(''), split(separator))(strings);
 
-type ReplaceNewLines = (
-  commaSeparator: string
-) => (newLineDelimiter: string) => (string: string) => string;
-const replaceNewLinesWith: ReplaceNewLines = commaSeparator => newLineDelimiter => string =>
+type ReplaceDelimiterWith = (
+  separator: string
+) => (delimiter: string) => (string: string) => string;
+const replaceDelimiterWith: ReplaceDelimiterWith = separator => delimiter => string =>
   map(string => {
-    if (string === newLineDelimiter) {
-      return commaSeparator;
+    if (string === delimiter) {
+      return separator;
     } else {
       return string;
     }
   })(string);
 
-type SanitizeNumber = (
-  commaSeparator: string
+type ReplaceDelimiterIfPresentWith = (
+  separator: string
+) => (delimiter: string) => (string: string) => string;
+const replaceDelimiterIfPresentWith: ReplaceDelimiterIfPresentWith = separator => delimiter => string =>
+  map(s => {
+    if (indexOf(s)(delimiter) === -1) {
+      return s;
+    } else {
+      return separator;
+    }
+  })(string);
+
+type ToNumberWithoutDelimitersIfNecessary = (
+  separator: string
 ) => (
-  newLineDelimiter: string
-) => (prefixDelimiter: string) => (string: string) => string;
-const sanitizeNumber: SanitizeNumber = commaSeparator => newLineDelimiter => prefixDelimiter => string => {
-  const replaceDelimitersWithCommas = delimiter => string =>
-    map(s => {
-      if (indexOf(s)(delimiter) === -1) {
-        return s;
-      } else {
-        return ',';
-      }
-    })(string);
+  delimiter: string
+) => (
+  prefixDelimiter: string
+) => ({ rest: Maybe<string>, tail: string }) => string;
+const toNumberWithoutDelimitersIfNecessary: ToNumberWithoutDelimitersIfNecessary = separator => delimiter => prefixDelimiter => ({
+  rest,
+  tail,
+}) => {
   const removeBracketsFrom = string =>
     pipe(without(['[', ']']), join(''))(string);
-  const createNumber = rest => tail => {
+  const toNumberWithoutDelimiters = rest => tail => {
     const delimiter = removeBracketsFrom(tail);
 
     return pipe(
-      replaceDelimitersWithCommas(delimiter),
-      filterWith(commaSeparator),
-      join(',')
+      replaceDelimiterIfPresentWith(separator)(delimiter),
+      filterWith(separator),
+      join(separator)
     )(rest);
   };
-  const createNumberIfNecessary = ({ rest, tail }) => {
-    if (tail === undefined) {
-      return string;
-    } else {
-      return createNumber(rest)(tail);
-    }
-  };
-  const getNumberAndDelimiterWithItsPrefix = string => {
-    const [head, rest] = split(newLineDelimiter)(string);
+
+  return rest
+    .map(value => toNumberWithoutDelimiters(value)(tail))
+    .getOrElse(tail);
+};
+
+type ToNumberAndDelimiterWithItsPrefix = (
+  delimiter: string
+) => (
+  prefixDelimiter: string
+) => (string: string) => { rest: Maybe<string>, tail: string };
+// TODO: find a name for { rest: Maybe<string>, tail: string } : character ?
+const toNumberAndDelimiterWithItsPrefix: ToNumberAndDelimiterWithItsPrefix = delimiter => prefixDelimiter => string => {
+  if (startsWith(prefixDelimiter)(string)) {
+    const [head, rest] = split(delimiter)(string);
     const [_, tail] = split(prefixDelimiter)(head);
 
     return {
-      rest,
+      rest: Maybe.Just(rest),
       tail,
     };
-  };
-
-  return pipe(getNumberAndDelimiterWithItsPrefix, createNumberIfNecessary)(
-    string
-  );
+  } else {
+    return {
+      rest: Maybe.Nothing(),
+      tail: string,
+    };
+  }
 };
 
 type FillWithZeroWhenEmpty = (input: string) => string;
@@ -122,11 +139,11 @@ const addNumbers: AddNumbers = input => {
 
   return pipe(
     fillWithZeroWhenEmpty,
-    log(1),
-    sanitizeNumber(COMMA_SEPARATOR)(NEW_LINE_DELIMITER)(PREFIX_DELIMITER),
-    log(2),
-    replaceNewLinesWith(COMMA_SEPARATOR)(NEW_LINE_DELIMITER),
-    log(3),
+    toNumberAndDelimiterWithItsPrefix(NEW_LINE_DELIMITER)(PREFIX_DELIMITER),
+    toNumberWithoutDelimitersIfNecessary(COMMA_SEPARATOR)(NEW_LINE_DELIMITER)(
+      PREFIX_DELIMITER
+    ),
+    replaceDelimiterWith(COMMA_SEPARATOR)(NEW_LINE_DELIMITER),
     filterWith(COMMA_SEPARATOR),
     toInt,
     checkForNegativeNumbers,
