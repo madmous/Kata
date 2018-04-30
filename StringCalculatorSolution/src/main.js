@@ -2,6 +2,7 @@
 import {
   findIndex,
   filter,
+  indexOf,
   join,
   map,
   pipe,
@@ -11,6 +12,7 @@ import {
 } from 'ramda';
 
 import { getValueOrFail, into, Result } from './folktale';
+import log from './log';
 
 type Sum = (numbers: number[]) => number;
 const sum: Sum = numbers => reduce((acc, number) => acc + number)(0)(numbers);
@@ -39,11 +41,9 @@ const checkForNegativeNumbers: CheckForNegativeNumbers = array => {
 type ToInt = (strings: string[]) => number[];
 const toInt: ToInt = strings => map(val => parseInt(val))(strings);
 
-type FilterCommas = (
-  commaSeparator: string
-) => (emptySeparator: string) => (strings: string[]) => string[];
-const filterCommas: FilterCommas = commaSeparator => emptySeparator => strings =>
-  pipe(join(emptySeparator), split(commaSeparator))(strings);
+type FilterWith = (separator: string) => (strings: string[]) => string[];
+const filterWith: FilterWith = separator => strings =>
+  pipe(join(''), split(separator))(strings);
 
 type ReplaceNewLines = (
   commaSeparator: string
@@ -61,14 +61,26 @@ type SanitizeNumber = (
   commaSeparator: string
 ) => (
   newLineDelimiter: string
-) => (prefixDelimitor: string) => (string: string) => string;
-const sanitizeNumber: SanitizeNumber = commaSeparator => newLineDelimiter => prefixDelimitor => string => {
-  const removeDelimiter = separator => string => split(separator)(string);
+) => (prefixDelimiter: string) => (string: string) => string;
+const sanitizeNumber: SanitizeNumber = commaSeparator => newLineDelimiter => prefixDelimiter => string => {
+  const replaceDelimitersWithCommas = delimiter => string =>
+    map(s => {
+      if (indexOf(s)(delimiter) === -1) {
+        return s;
+      } else {
+        return ',';
+      }
+    })(string);
   const removeBracketsFrom = string =>
     pipe(without(['[', ']']), join(''))(string);
   const createNumber = rest => tail => {
     const delimiter = removeBracketsFrom(tail);
-    return pipe(removeDelimiter(delimiter), join(commaSeparator))(rest);
+
+    return pipe(
+      replaceDelimitersWithCommas(delimiter),
+      filterWith(commaSeparator),
+      join(',')
+    )(rest);
   };
   const createNumberIfNecessary = ({ rest, tail }) => {
     if (tail === undefined) {
@@ -79,7 +91,7 @@ const sanitizeNumber: SanitizeNumber = commaSeparator => newLineDelimiter => pre
   };
   const getNumberAndDelimiterWithItsPrefix = string => {
     const [head, rest] = split(newLineDelimiter)(string);
-    const [_, tail] = split(prefixDelimitor)(head);
+    const [_, tail] = split(prefixDelimiter)(head);
 
     return {
       rest,
@@ -105,15 +117,17 @@ type AddNumbers = (input: string) => number;
 const addNumbers: AddNumbers = input => {
   const BIG_NUMBERS = 1000;
   const COMMA_SEPARATOR = ',';
-  const EMPTY_SEPRATOR = '';
   const NEW_LINE_DELIMITER = '\n';
-  const PREFIX_DELIMITOR = '//';
+  const PREFIX_DELIMITER = '//';
 
   return pipe(
     fillWithZeroWhenEmpty,
-    sanitizeNumber(COMMA_SEPARATOR)(NEW_LINE_DELIMITER)(PREFIX_DELIMITOR),
+    log(1),
+    sanitizeNumber(COMMA_SEPARATOR)(NEW_LINE_DELIMITER)(PREFIX_DELIMITER),
+    log(2),
     replaceNewLinesWith(COMMA_SEPARATOR)(NEW_LINE_DELIMITER),
-    filterCommas(COMMA_SEPARATOR)(EMPTY_SEPRATOR),
+    log(3),
+    filterWith(COMMA_SEPARATOR),
     toInt,
     checkForNegativeNumbers,
     into(filterBigNumbers(BIG_NUMBERS)),

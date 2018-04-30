@@ -79,7 +79,7 @@ describe('Add numbers', () => {
     expect(sum).toEqual(24);
   });
 
-  xit('should handle multiple delimiters', () => {
+  it('should handle multiple delimiters', () => {
     //given
     const numbers = '//[**][6]\n1**263';
 

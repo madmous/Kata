@@ -36,9 +36,9 @@ Don’t start/answer the with a no; implement the idea and then discuss. It is o
 
 7. Numbers bigger than 1000 should be ignored, so adding 2 + 1001  = 2
 
-8. Delimiters can be of any length with the following format:  “//[delimiter]\n” for example: “//[8]\n1***2***3” should return 6
+8. Delimiters can be of any length with the following format:  “//[delimiter]\n” for example: “//[8]\n1***20***3” should return 24
 
-9. Allow multiple delimiters like this:  “//[delim1][delim2]\n” for example “//[*][%]\n1*2%3” should return 6
+9. Allow multiple delimiters like this:  “//[delim1][delim2]\n” for example “//[*][6]\n1*263” should return 6
 
 10. Make sure you can also handle multiple delimiters with length longer than one char
 
