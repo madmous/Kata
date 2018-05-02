@@ -6,6 +6,8 @@
 
 [libs]
 
+flow-declarations/
+
 [options]
 suppress_comment= \\(.\\|\n\\)*\\$FlowFixMe
 
