@@ -18,7 +18,7 @@
     + "X6/" should score 20 (10 + 6 + 4)
 
 8. The game score is the total of all frame scores: for example 
-    + "X X X X X X X X X X X X" should score 300 (30 * 10)
+    + "X X X X X X X X X XXX" should score 300 (30 * 10)
     + "9- 9- 9- 9- 9- 9- 9- 9- 9- 9-" should score 90 (9 * 10)
     + "5/ 5/ 5/ 5/ 5/ 5/ 5/ 5/ 5/ 5/5" should score 150 (15 * 10)
 
