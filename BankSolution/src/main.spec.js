@@ -5,26 +5,45 @@ import {
   doTransaction,
 } from './main';
 
-import type { TransactionType, Amount, Transaction, Account } from './main';
+import type { TransactionType, Transaction, Account } from './main';
 
-type ATransaction = ({
-  amount: Amount,
-  date: string,
-}) => (type: TransactionType) => Transaction;
-type AnAccount = (amount: Amount) => Account;
+type ATransaction = $Shape<Transaction> => (type: TransactionType) => Transaction;
+type AnAccount = $Shape<Account> => Account;
 
-const anAccount: AnAccount = amount => ({ amount, transactions: [] });
-const aTransaction: ATransaction = ({ amount, date }) => type => ({
-  amount,
-  date,
-  type,
-});
+const anAccount: AnAccount = accountProps => {
+  const defaultAccount = {
+    amount: 100,
+    transactions: [],
+  };
+
+  const account = {
+    ...defaultAccount,
+    ...accountProps,
+  };
+
+  return account;
+};
+
+const aTransaction: ATransaction = transactionProps => type => {
+  const defaultTransaction = {
+    amount: 100,
+    date: '2018-02-01',
+  };
+
+  const account = {
+    ...defaultTransaction,
+    ...transactionProps,
+    type,
+  };
+
+  return account;
+};
 
 describe('Acount deposit', () => {
   it('should deposit money to an account when issued', async () => {
     // given
-    const account = anAccount(100);
-    const transaction = aTransaction({ amount: 100, date: '2018-02-01' })(
+    const account = anAccount();
+    const transaction = aTransaction()(
       'DEPOSIT'
     );
 
@@ -39,8 +58,8 @@ describe('Acount deposit', () => {
 describe('Acount withdrawal', () => {
   it('should withdraw money when the account amount is not empty', async () => {
     // given
-    const account = anAccount(100);
-    const transaction = aTransaction({ amount: 100, date: '2018-02-01' })(
+    const account = anAccount();
+    const transaction = aTransaction()(
       'WITHDRAWAL'
     );
 
@@ -55,13 +74,10 @@ describe('Acount withdrawal', () => {
 describe('Transfer between accounts', () => {
   it('should withdraw money from one account and deposit it to another', async () => {
     // given
-    const fromAccount = anAccount(100);
+    const fromAccount = anAccount();
     const toAccount = anAccount(150);
 
-    const transaction = aTransaction({
-      amount: 100,
-      date: '2018-02-01',
-    })('WITHDRAWAL');
+    const transaction = aTransaction()('WITHDRAWAL');
 
     // when
     const accounts = doTransactionBetweenAccounts(fromAccount)(transaction)(
