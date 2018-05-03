@@ -1,104 +1,81 @@
 /** @flow */
 
-import calculateScore from './main';
+import scoreGame from './main';
 
 describe('Add rolls', () => {
-  it('should return add the score of the 2 tries when the player fails to knock down all pins', () => {
-    //given
-    const numbers = '53';
+  [
+    { rolls: '--', result: 0 },
+    { rolls: '1', result: 1 },
+    { rolls: '13', result: 4 },
+    { rolls: '13521', result: 12 },
+  ].forEach(({ rolls, result }) => {
+    it(`should calculate scores when there are no strikes or spares: ${rolls}`, () => {
+      //given
 
-    //when
-    const sum = calculateScore(numbers);
+      //when
+      const score = scoreGame(rolls);
 
-    //then
-    expect(sum).toEqual(8);
+      //then
+      expect(score).toEqual(result);
+    });
   });
 
-  it('should score ten plus the number of pins knocked down on the next throw when the player scores a spare', () => {
-    //given
-    const numbers = '6/ 81';
+  [
+    { rolls: '1-5-', result: 6 },
+    { rolls: '9-9-9-9-9-9-9-9-9-9-', result: 90 },
+  ].forEach(({ rolls, result }) => {
+    it(`should calculate scores when there is a miss: ${rolls}`, () => {
+      //given
 
-    //when
-    const sum = calculateScore(numbers);
+      //when
+      const score = scoreGame(rolls);
 
-    //then
-    expect(sum).toEqual(27);
+      //then
+      expect(score).toEqual(result);
+    });
   });
 
-  it('should score ten plus the number of pins knocked down on the thwo next throws when the player scores a spare', () => {
-    //given
-    const numbers = 'X 81';
+  [
+    { rolls: '1/', result: 10 },
+    { rolls: '1/--', result: 10 },
+    { rolls: '1/-5', result: 15 },
+    { rolls: '1/35-', result: 21 },
+    { rolls: '1/3/23', result: 30 },
+    { rolls: '5/5/5/5/5/5/5/5/5/ 5/5', result: 150 },
+  ].forEach(({ rolls, result }) => {
+    it(`should calculate scores when there are spares: ${rolls}`, () => {
+      //given
 
-    //when
-    const sum = calculateScore(numbers);
+      //when
+      const score = scoreGame(rolls);
 
-    //then
-    expect(sum).toEqual(28);
+      //then
+      expect(score).toEqual(result);
+    });
   });
 
-  it('should let the player throw one more ball when it is his last throw', () => {
-    //given
-    const numbers = 'XXX';
+  [
+    // { rolls: 'X', result: 10 },
+    // { rolls: 'X--', result: 10 },
+    // { rolls: 'X--51', result: 16 },
+    // { rolls: 'X51', result: 22 },
+    // { rolls: 'XXXXXXXXXXXX', result: 300 },
+    // { rolls: 'XXXXXXXXXX12', result: 274 },
+    // { rolls: '1/35XXX45', result: 103 },
+    // { rolls: '1/35XXX458/X35', result: 149 },
+    // { rolls: '1/35XXX458/X3/', result: 153 },
+    // { rolls: '1/35XXX458/X3/23', result: 160 },
+    // { rolls: '1/35XXX458/X3/X', result: 173 },
+    // { rolls: '1/35XXX458/X3/XX6', result: 189 },
+  ].forEach(({ rolls, result }) => {
+    it(`should calculate scores when there are strikes: ${rolls}`, () => {
+      //given
 
-    //when
-    const sum = calculateScore(numbers);
+      //when
+      const score = scoreGame(rolls);
 
-    //then
-    expect(sum).toEqual(30);
-  });
-
-  it('should let the player throw one more ball when it is his last throw', () => {
-    //given
-    const numbers = '9/X';
-
-    //when
-    const sum = calculateScore(numbers);
-
-    //then
-    expect(sum).toEqual(20);
-  });
-
-  it('should let the player throw one more ball when it is his last throw', () => {
-    //given
-    const numbers = 'X6/';
-
-    //when
-    const sum = calculateScore(numbers);
-
-    //then
-    expect(sum).toEqual(20);
-  });
-
-  it('should calculate the game score', () => {
-    //given
-    const numbers = '9- 9- 9- 9- 9- 9- 9- 9- 9- 9-';
-
-    //when
-    const sum = calculateScore(numbers);
-
-    //then
-    expect(sum).toEqual(90);
-  });
-
-  it('should calculate the game score', () => {
-    //given
-    const numbers = '5/ 5/ 5/ 5/ 5/ 5/ 5/ 5/ 5/ 5/5';
-
-    //when
-    const sum = calculateScore(numbers);
-
-    //then
-    expect(sum).toEqual(150);
-  });
-
-  it.only('should calculate the game score', () => {
-    //given
-    const numbers = 'X X X';
-
-    //when
-    const sum = calculateScore(numbers);
-
-    //then
-    expect(sum).toEqual(60);
+      //then
+      expect(score).toEqual(result);
+    });
   });
 });

@@ -1,107 +1,102 @@
 /** @flow */
 
-import { head, last, map, pipe, reduce, split, sum, tail } from 'ramda';
+import {
+  addIndex,
+  concat,
+  drop,
+  filter,
+  head,
+  map,
+  nth,
+  pipe,
+  split,
+  sum,
+  take,
+} from 'ramda';
 
 import log from './log';
 
-type Score = number[];
-type Status = 'STRIKE' | 'SPARE' | 'NOTHING';
+type CalculateRollsScore = (nbrRolls: number) => (rolls: number[]) => boolean;
+const calculateRollsScore: CalculateRollsScore = nbrRolls => rolls =>
+  sum(take(nbrRolls)(rolls));
 
-type Frame = {
-  status: Status,
-  score: Score,
-};
+type IsStrike = (rolls: number[]) => boolean;
+const isStrike: IsStrike = rolls => head(rolls) === 10;
 
-type CreateFrameScore = (acc: Frame, frame: Frame) => Frame;
-const createFrameScore: CreateFrameScore = (acc, frame) => {
-  if (acc.status === 'SPARE') {
+type IsSpare = (rolls: number[]) => boolean;
+const isSpare: IsSpare = rolls => sum(take(2)(rolls)) === 10;
+
+const g = rolls => {
+  if (isStrike(rolls)) {
     return {
-      status: frame.status,
-      score: [sum(acc.score) + head(frame.score) + sum(frame.score)],
+      take: 3,
+      dropNbr: 1,
     };
-  } else if (acc.status === 'STRIKE') {
-    console.log('fdsf', tail(frame.score))
+  } else if (isSpare(rolls)) {
     return {
-      status: frame.status,
-      score: [
-        sum(acc.score) +
-          head(frame.score) +
-          last(frame.score) +
-          sum(frame.score),
-      ],
+      take: 3,
+      dropNbr: 2,
     };
   } else {
     return {
-      status: frame.status,
-      score: [sum(acc.score) + sum(frame.score)],
+      take: 2,
+      dropNbr: 2,
     };
   }
 };
 
-type ToFrameScore = (frames: Frame[]) => number;
-const toFrameScore: ToFrameScore = frames => {
-  const { score } = head(frames);
-
-  if (frames.length === 1) {
-    return sum(score);
+type CalculateScore = (scores: number[]) => (rolls: number[]) => number[];
+const calculateScore: CalculateScore = scores => rolls => {
+  if (rolls.length === 0) {
+    return sum(scores);
   } else {
-    console.log('frames', frames)
-    const frame = reduce(createFrameScore)(head(frames))(tail(frames));
-    const score = sum(frame.score);
-    return score;
+    if (rolls.length === 3) {
+      const bonus = calculateRollsScore(3)(rolls);
+      return calculateScore(concat(scores)([bonus]))(drop(3)(rolls));
+    } else {
+      const { take, dropNbr } = g(rolls);
+      const bonus = calculateRollsScore(take)(rolls);
+      return calculateScore(concat(scores)([bonus]))(drop(dropNbr)(rolls));
+    }
   }
 };
 
-type CreateScore = (acc: number[], character: string) => number[];
-const createScore: CreateScore = (acc, character) => {
-  if (character === '/') {
-    return [...acc, 10 - parseInt(last(acc))];
-  } else if (character === 'X') {
-    return [...acc, 10];
-  } else if (character === '-') {
-    return [...acc, 0];
-  } else {
-    return [...acc, parseInt(character)];
-  }
+type ToNumbers = (input: string[]) => number[];
+const toNumbers: ToNumbers = input => map(parseInt)(input);
+
+type RemoveSpaces = (input: string[]) => number[];
+const removeSpaces: RemoveSpaces = input => filter(v => v !== ' ')(input);
+
+type ReplaceSpecialCharacters = (input: string[]) => string[];
+const replaceSpecialCharacters: ReplaceSpecialCharacters = input => {
+  const mapIndexed = addIndex(map());
+
+  return mapIndexed((currentValue, index, array) => {
+    if (currentValue === '/') {
+      return String(10 - parseInt(nth(index - 1)(array)));
+    } else if (currentValue === 'X') {
+      return '10';
+    } else if (currentValue === '-') {
+      return '0';
+    } else {
+      return currentValue;
+    }
+  })(input);
 };
 
-type ToScore = (characters: string) => Score;
-const toScore: ToScore = characters => reduce(createScore)([])(characters);
-
-type ToStatus = (character: string) => Status;
-const toStatus: ToStatus = character => {
-  const firstTry = head(character);
-  const secondTry = last(character);
-
-  if (firstTry === 'X') {
-    return 'STRIKE';
-  } else if (secondTry === '/') {
-    return 'SPARE';
-  } else {
-    return 'NOTHING';
-  }
+type FillWithNumbers = (input: string[]) => number[];
+const fillWithNumbers: FillWithNumbers = input => {
+  return pipe(replaceSpecialCharacters, removeSpaces, toNumbers)(input);
 };
 
-type ToFrame = (characters: string) => Frame;
-const toFrame: ToFrame = characters => {
-  const status = toStatus(characters);
-  const score = toScore(characters);
-
-  return {
-    status,
-    score,
-  };
+type ToRolls = (input: string) => number[];
+const toRolls: ToRolls = input => {
+  return pipe(split(''), fillWithNumbers)(input);
 };
 
-type ToFrames = (characters: string[]) => Frame[];
-const toFrames: ToFrames = characters => map(toFrame)(characters);
-
-type ToArray = (characters: string) => string[];
-const toArray: ToArray = characters => split(' ')(characters);
-
-type CalculateScore = (input: string) => number;
-const calculateScore: CalculateScore = input => {
-  return pipe(toArray, toFrames, toFrameScore)(input);
+type ScoreGame = (input: string) => number;
+const scoreGame: ScoreGame = input => {
+  return pipe(toRolls, calculateScore([]))(input);
 };
 
-export { calculateScore as default };
+export { scoreGame as default };
