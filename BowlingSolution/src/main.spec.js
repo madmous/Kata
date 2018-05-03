@@ -41,7 +41,7 @@ describe('Add rolls', () => {
     { rolls: '1/-5', result: 15 },
     { rolls: '1/35-', result: 21 },
     { rolls: '1/3/23', result: 30 },
-    { rolls: '5/5/5/5/5/5/5/5/5/ 5/5', result: 150 },
+    { rolls: '5/5/5/5/5/5/5/5/5/5/5', result: 150 },
   ].forEach(({ rolls, result }) => {
     it(`should calculate scores when there are spares: ${rolls}`, () => {
       //given
@@ -55,18 +55,18 @@ describe('Add rolls', () => {
   });
 
   [
-    // { rolls: 'X', result: 10 },
-    // { rolls: 'X--', result: 10 },
-    // { rolls: 'X--51', result: 16 },
-    // { rolls: 'X51', result: 22 },
-    // { rolls: 'XXXXXXXXXXXX', result: 300 },
-    // { rolls: 'XXXXXXXXXX12', result: 274 },
-    // { rolls: '1/35XXX45', result: 103 },
-    // { rolls: '1/35XXX458/X35', result: 149 },
-    // { rolls: '1/35XXX458/X3/', result: 153 },
-    // { rolls: '1/35XXX458/X3/23', result: 160 },
-    // { rolls: '1/35XXX458/X3/X', result: 173 },
-    // { rolls: '1/35XXX458/X3/XX6', result: 189 },
+    { rolls: 'X', result: 10 },
+    { rolls: 'X--', result: 10 },
+    { rolls: 'X--51', result: 16 },
+    { rolls: 'X51', result: 22 },
+    { rolls: 'XXXXXXXXXXXX', result: 300 },
+    { rolls: 'XXXXXXXXXX12', result: 274 },
+    { rolls: '1/35XXX45', result: 103 },
+    { rolls: '1/35XXX458/X35', result: 149 },
+    { rolls: '1/35XXX458/X3/', result: 153 },
+    { rolls: '1/35XXX458/X3/23', result: 160 },
+    { rolls: '1/35XXX458/X3/X', result: 173 },
+    { rolls: '1/35XXX458/X3/XX6', result: 189 },
   ].forEach(({ rolls, result }) => {
     it(`should calculate scores when there are strikes: ${rolls}`, () => {
       //given
