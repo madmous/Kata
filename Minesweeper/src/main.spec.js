@@ -8,7 +8,7 @@ describe('Find mines', () => {
     const field = '*... .... .*......';
 
     //when
-    const mines = findMines(filed);
+    const mines = findMines(field);
 
     //then
     expect(mines).toEqual('*100 2210 1*10 1110');

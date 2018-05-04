@@ -1,6 +1,6 @@
 /** @flow */
 
-type FindMines = (input: string) => number;
+type FindMines = (input: string) => string;
 const findMines: FindMines = input => {
   throw new Error('Not implemented yet');
 };
