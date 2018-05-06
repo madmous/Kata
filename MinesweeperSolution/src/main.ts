@@ -1,24 +1,27 @@
 import {
   add,
-  clone,
   concat,
+  differenceWith,
   drop,
   filter,
   flatten,
   flow,
-  forEach,
   head,
+  isEqual,
   join,
   map,
   split,
   subtract,
+  tail,
   take,
 } from 'lodash/fp';
+
+import { fromJS } from 'immutable';
 
 import log from './log';
 
 type InputField = ReadonlyArray<ReadonlyArray<string>>;
-type Field = number[][];
+type Field = ReadonlyArray<ReadonlyArray<number>>;
 
 interface FieldBounds {
   width: number;
@@ -38,24 +41,39 @@ interface Position {
 type ToString = (field: Field) => string;
 const toString: ToString = field => flow(map(join('')), join(' '))(field);
 
-type AddAdjacentMinesNumberOn = (
-  field: Field
-) => (coordinates: Coordinate[]) => number[];
-const addAdjacentMinesNumberOn: AddAdjacentMinesNumberOn = field => coordinates => {
-  const newField = clone(field);
+type ToNextField = (field: Field) => (coordinate: Coordinate) => Field;
+const toNextField: ToNextField = field => coordinate => {
+  const { x, y } = coordinate;
+  const row = field[x];
+  const nextRowList = fromJS(row).set(y, add(1)(row[y]));
 
-  forEach((coordinate: Coordinate) => {
-    const value = newField[coordinate.x][coordinate.y];
-
-    if (value !== -1) {
-      newField[coordinate.x][coordinate.y] = add(1)(
-        newField[coordinate.x][coordinate.y]
-      );
-    }
-  })(coordinates);
-
-  return flatten(newField);
+  return fromJS(field)
+    .set(x, nextRowList.toJS())
+    .toJS();
 };
+
+type CountAdjacentMinesOn = (
+  field: Field
+) => (coordinates: Coordinate[]) => ReadonlyArray<number>;
+const countAdjacentMinesOn: CountAdjacentMinesOn = field => coordinates => {
+  if (coordinates.length === 0) {
+    return fromJS(field)
+      .flatten()
+      .toJS();
+  } else {
+    const coordinate = head(coordinates);
+    const nextCoordinates = tail(coordinates);
+    const nextField = toNextField(field)(coordinate);
+
+    return countAdjacentMinesOn(nextField)(nextCoordinates);
+  }
+};
+
+type FilterCoordinatesEqualTo = (
+  mines: Coordinate[]
+) => (adjacentSquares: Coordinate[]) => Coordinate[];
+const filterCoordinatesEqualTo: FilterCoordinatesEqualTo = mines => adjacentSquares =>
+  differenceWith(isEqual)(adjacentSquares)(mines);
 
 type IsCoordinateOutOf = (
   filedBounds: FieldBounds
@@ -164,10 +182,11 @@ type ToField = (
   width: number
 ) => (accumulator: Field) => (fllatennedMatrix: number[]) => Field;
 const toField: ToField = width => accumulator => fllatennedMatrix => {
+  const acc = [...accumulator];
   if (fllatennedMatrix.length === 0) {
     return accumulator;
   } else {
-    const nextMatrix = concat(accumulator)([take(width)(fllatennedMatrix)]);
+    const nextMatrix = concat(acc)([take(width)(fllatennedMatrix)]);
     const nextFllatennedMatrix = drop(width)(fllatennedMatrix);
 
     return toField(width)(nextMatrix)(nextFllatennedMatrix);
@@ -183,9 +202,14 @@ const replaceDotsWithZerosIfNecessary: ReplaceDotsWithZerosIfNecessary = input =
   }
 };
 
-type ReplaceDotsWithZeros = (input: string[]) => number[];
-const replaceDotsWithZeros: ReplaceDotsWithZeros = input =>
-  map(replaceDotsWithZerosIfNecessary)(input);
+type ReplaceDotsWithZeros = (inputField: InputField) => number[];
+const replaceDotsWithZeros: ReplaceDotsWithZeros = inputField => {
+  const flattened = fromJS(inputField)
+    .flatten()
+    .toJS();
+
+  return map(replaceDotsWithZerosIfNecessary)(flattened);
+};
 
 type GetFieldBounds = (inputField: InputField) => FieldBounds;
 const getFieldBounds: GetFieldBounds = inputField => ({
@@ -194,28 +218,29 @@ const getFieldBounds: GetFieldBounds = inputField => ({
 });
 
 type ToInputField = (input: string) => InputField;
-const toInputField: ToInputField = input => flow(split(' '), map(split('')))(input);
+const toInputField: ToInputField = input =>
+  flow(split(' '), map(split('')))(input);
 
 type FindMines = (input: string) => string;
 const findMines: FindMines = input => {
   const inputField = toInputField(input);
   const fieldBounds = getFieldBounds(inputField);
 
-  const field = flow(
-    flatten,
-    replaceDotsWithZeros,
-    toField(fieldBounds.width)([])
-  )(inputField);
+  const field = flow(replaceDotsWithZeros, toField(fieldBounds.width)([]))(
+    inputField
+  );
+
+  const mines = findMineCoordinates([])({ row: 0, column: 0 })(input);
 
   return flow(
-    findMineCoordinates([])({ row: 0, column: 0 }),
     calculateAdjacentCoordinatesToMine,
     filterCoordinatesOutOf(fieldBounds),
-    addAdjacentMinesNumberOn(field),
+    filterCoordinatesEqualTo(mines),
+    countAdjacentMinesOn(field),
     placeMineCharacterOnField,
     toField(fieldBounds.width)([]),
     toString
-  )(input);
+  )(mines);
 };
 
 export { findMines as default };
