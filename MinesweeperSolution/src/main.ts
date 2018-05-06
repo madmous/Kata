@@ -4,31 +4,33 @@ import {
   differenceWith,
   drop,
   filter,
-  flatten,
   flow,
   head,
   isEqual,
   join,
   map,
+  reduce,
   split,
   subtract,
   tail,
   take,
 } from 'lodash/fp';
 
-import { fromJS } from 'immutable';
+import { adjust, update } from 'ramda';
+
+import { flatten } from './utils';
 
 import log from './log';
 
-type InputField = ReadonlyArray<ReadonlyArray<string>>;
-type Field = ReadonlyArray<ReadonlyArray<number>>;
+export type InputField = ReadonlyArray<ReadonlyArray<string>>;
+export type Field = ReadonlyArray<ReadonlyArray<number>>;
 
 interface FieldBounds {
   width: number;
   height: number;
 }
 
-interface Coordinate {
+export interface Coordinate {
   x: number;
   y: number;
 }
@@ -44,22 +46,17 @@ const toString: ToString = field => flow(map(join('')), join(' '))(field);
 type ToNextField = (field: Field) => (coordinate: Coordinate) => Field;
 const toNextField: ToNextField = field => coordinate => {
   const { x, y } = coordinate;
-  const row = field[x];
-  const nextRowList = fromJS(row).set(y, add(1)(row[y]));
+  const nextRow = adjust(add(1), y, field[x]);
 
-  return fromJS(field)
-    .set(x, nextRowList.toJS())
-    .toJS();
+  return update(x, nextRow, field);
 };
 
 type CountAdjacentMinesOn = (
   field: Field
-) => (coordinates: Coordinate[]) => ReadonlyArray<number>;
+) => (coordinates: ReadonlyArray<Coordinate>) => ReadonlyArray<number>;
 const countAdjacentMinesOn: CountAdjacentMinesOn = field => coordinates => {
   if (coordinates.length === 0) {
-    return fromJS(field)
-      .flatten()
-      .toJS();
+    return flatten(field);
   } else {
     const coordinate = head(coordinates);
     const nextCoordinates = tail(coordinates);
@@ -70,10 +67,11 @@ const countAdjacentMinesOn: CountAdjacentMinesOn = field => coordinates => {
 };
 
 type FilterCoordinatesEqualTo = (
-  mines: Coordinate[]
-) => (adjacentSquares: Coordinate[]) => Coordinate[];
-const filterCoordinatesEqualTo: FilterCoordinatesEqualTo = mines => adjacentSquares =>
-  differenceWith(isEqual)(adjacentSquares)(mines);
+  mines: ReadonlyArray<Coordinate>
+) => (adjacentSquares: ReadonlyArray<Coordinate>) => ReadonlyArray<Coordinate>;
+const filterCoordinatesEqualTo: FilterCoordinatesEqualTo = mines => adjacentSquares => {
+  return differenceWith(isEqual, adjacentSquares, mines);
+};
 
 type IsCoordinateOutOf = (
   filedBounds: FieldBounds
@@ -86,13 +84,13 @@ const isCoordinateOutOf: IsCoordinateOutOf = filedBounds => minePosition =>
 
 type FilterCoordinatesOutOf = (
   fieldBounds: FieldBounds
-) => (coordinates: Coordinate[]) => Coordinate[];
+) => (coordinates: ReadonlyArray<Coordinate>) => ReadonlyArray<Coordinate>;
 const filterCoordinatesOutOf: FilterCoordinatesOutOf = fieldBounds => minePositions =>
   filter(isCoordinateOutOf(fieldBounds))(minePositions);
 
 type CalculateAdjacentCoordinateToMine = (
   coordinate: Coordinate
-) => Coordinate[];
+) => ReadonlyArray<Coordinate>;
 const calculateAdjacentCoordinateToMine: CalculateAdjacentCoordinateToMine = coordinate => {
   const { x, y } = coordinate;
   const top = { x, y: add(1)(y) };
@@ -121,14 +119,14 @@ const calculateAdjacentCoordinateToMine: CalculateAdjacentCoordinateToMine = coo
 };
 
 type CalculateAdjacentCoordinatesToMine = (
-  coordinates: Coordinate[]
-) => Coordinate[];
+  coordinates: ReadonlyArray<Coordinate>
+) => ReadonlyArray<Coordinate>;
 const calculateAdjacentCoordinatesToMine: CalculateAdjacentCoordinatesToMine = coordinates =>
   flow(map(calculateAdjacentCoordinateToMine), flatten)(coordinates);
 
-type GetNextPosition = (character: string) => (pos: Position) => Position;
-const getNextPosition: GetNextPosition = character => pos => {
-  const { row, column } = pos;
+type GetNextPosition = (character: string) => (position: Position) => Position;
+const getNextPosition: GetNextPosition = character => position => {
+  const { row, column } = position;
   if (character === ' ') {
     return { column: 0, row: add(1)(row) };
   } else {
@@ -136,20 +134,21 @@ const getNextPosition: GetNextPosition = character => pos => {
   }
 };
 
-type GetMineCoordinates = (
-  coordinates: Coordinate[]
-) => (character: string) => (pos: Position) => Coordinate[];
-const getNextCoordinates: GetMineCoordinates = coordinates => character => pos => {
+type GetNextCoordinates = (
+  coordinates: ReadonlyArray<Coordinate>
+) => (character: string) => (position: Position) => ReadonlyArray<Coordinate>;
+const getNextCoordinates: GetNextCoordinates = coordinates => character => position => {
+  const { row, column } = position;
   if (character === '*') {
-    return [...coordinates, { x: pos.row, y: pos.column }];
+    return [...coordinates, { x: row, y: column }];
   } else {
     return coordinates;
   }
 };
 
 type FindMineCoordinates = (
-  accumulutator: Coordinate[]
-) => (position: Position) => (input: string) => Coordinate[];
+  accumulutator: ReadonlyArray<Coordinate>
+) => (position: Position) => (input: string) => ReadonlyArray<Coordinate>;
 const findMineCoordinates: FindMineCoordinates = accumulutator => position => input => {
   if (input.length === 0) {
     return accumulutator;
@@ -174,22 +173,24 @@ const placeMineCharacterIfNcessaryOn: placeMineCharacterIfNcessaryOn = value => 
   }
 };
 
-type placeMineCharacterOnField = (field: number[]) => Array<number | string>;
+type placeMineCharacterOnField = (
+  field: ReadonlyArray<number>
+) => ReadonlyArray<number | string>;
 const placeMineCharacterOnField: placeMineCharacterOnField = field =>
   map(placeMineCharacterIfNcessaryOn)(field);
 
 type ToField = (
   width: number
-) => (accumulator: Field) => (fllatennedMatrix: number[]) => Field;
-const toField: ToField = width => accumulator => fllatennedMatrix => {
+) => (accumulator: Field) => (fllatennedField: ReadonlyArray<number>) => Field;
+const toField: ToField = width => accumulator => fllatennedField => {
   const acc = [...accumulator];
-  if (fllatennedMatrix.length === 0) {
+  if (fllatennedField.length === 0) {
     return accumulator;
   } else {
-    const nextMatrix = concat(acc)([take(width)(fllatennedMatrix)]);
-    const nextFllatennedMatrix = drop(width)(fllatennedMatrix);
+    const nextField = concat(acc)([take(width)(fllatennedField)]);
+    const nextFllatennedField = drop(width)(fllatennedField);
 
-    return toField(width)(nextMatrix)(nextFllatennedMatrix);
+    return toField(width)(nextField)(nextFllatennedField);
   }
 };
 
@@ -202,14 +203,9 @@ const replaceDotsWithZerosIfNecessary: ReplaceDotsWithZerosIfNecessary = input =
   }
 };
 
-type ReplaceDotsWithZeros = (inputField: InputField) => number[];
-const replaceDotsWithZeros: ReplaceDotsWithZeros = inputField => {
-  const flattened = fromJS(inputField)
-    .flatten()
-    .toJS();
-
-  return map(replaceDotsWithZerosIfNecessary)(flattened);
-};
+type ReplaceDotsWithZeros = (inputField: InputField) => ReadonlyArray<number>;
+const replaceDotsWithZeros: ReplaceDotsWithZeros = inputField =>
+  map(replaceDotsWithZerosIfNecessary)(flatten(inputField));
 
 type GetFieldBounds = (inputField: InputField) => FieldBounds;
 const getFieldBounds: GetFieldBounds = inputField => ({

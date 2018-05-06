@@ -14,7 +14,7 @@
       "node_modules",
       "**/*.spec.ts"
   ],
-  "files": [
-    "node_modules/immutable/dist/immutable.d.ts"
-  ]
+  // "files": [
+  //   "node_modules/immutable/dist/immutable.d.ts"
+  // ]
 }

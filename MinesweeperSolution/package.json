@@ -34,7 +34,6 @@
   },
   "dependencies": {
     "folktale": "^2.1.0",
-    "immutable": "^3.8.2",
     "lodash": "^4.17.5",
     "moment": "^2.21.0",
     "ramda": "^0.25.0",
