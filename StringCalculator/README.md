@@ -1,6 +1,5 @@
 ## Constraints
 
-+ Write the best code you have ever written
 + No regex (unless you want to rewrite your code when you reach the fourth test case)
 
 ## Pair Programming guidelines

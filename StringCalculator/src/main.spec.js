@@ -25,7 +25,7 @@ describe('Add numbers', () => {
     expect(sum).toEqual(18);
   });
 
-  xit('should handle new lines between numbers', () => {
+  xit('should handle handle new lines between numbers', () => {
     //given
     const numbers = '1\n2,10';
 
@@ -57,7 +57,7 @@ describe('Add numbers', () => {
     }).toThrow('negatives not allowed');
   });
 
-  xit('should filter numbers bigger than 1000', () => {
+  xit('should filter numbers bigger than 1000 when adding', () => {
     //given
     const numbers = '1,1002';
 
@@ -68,7 +68,7 @@ describe('Add numbers', () => {
     expect(sum).toEqual(1);
   });
 
-  xit('should handle a delimeter of any length', () => {
+  xit('should handle delimeter of any length', () => {
     //given
     const numbers = '//[***]\n1***20***3';
 
@@ -79,7 +79,7 @@ describe('Add numbers', () => {
     expect(sum).toEqual(24);
   });
 
-  xit('should handle multiple delimiters', () => {
+  xit('should handle multiple delimxiters', () => {
     //given
     const numbers = '//[**][6]\n1**263';
 
