@@ -58,8 +58,8 @@ type IsPresentIn = (delimiter: string) => (numberInString: string) => boolean;
 const isPresentIn: IsPresentIn = (delimiter: string) => (numberInString: string) =>
   indexOf(numberInString)(delimiter) === -1;
 
-type IsBracket = (strings: string) => boolean;
-const isBracket: IsBracket = strings => strings !== '[' || strings !== '[';
+type IsBracket = (delimiter: string) => boolean;
+const isBracket: IsBracket = delimiter => delimiter !== '[' || delimiter !== '[';
 
 type ReplaceDelimitersIfNecessaryWith = (
   commaSeparator: CommaSeparator
@@ -78,8 +78,8 @@ const replaceDelimitersIfNecessaryWith: ReplaceDelimitersIfNecessaryWith = comma
   }
 };
 
-type AddNumbers = (input: string) => number;
-const addNumbers: AddNumbers = input => {
+type Add = (input: string) => number;
+const add: Add = input => {
   const BIG_NUMBERS = 1000;
   const COMMA_SEPARATOR = ',';
   const NEW_LINE_DELIMITER = '\n';
@@ -95,4 +95,4 @@ const addNumbers: AddNumbers = input => {
   )(input);
 };
 
-export { addNumbers as default };
+export { add as default };

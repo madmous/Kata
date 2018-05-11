@@ -1,4 +1,4 @@
-import addNumbers from './main';
+import add from './main';
 
 describe('Add numbers', () => {
   it('should return 0 when an empty string is passed', () => {
@@ -6,7 +6,7 @@ describe('Add numbers', () => {
     const numbers = '';
 
     // when
-    const sum = addNumbers(numbers);
+    const sum = add(numbers);
 
     // then
     expect(sum).toEqual(0);
@@ -17,7 +17,7 @@ describe('Add numbers', () => {
     const numbers = '10,2,3,2,1';
 
     // when
-    const sum = addNumbers(numbers);
+    const sum = add(numbers);
 
     // then
     expect(sum).toEqual(18);
@@ -28,7 +28,7 @@ describe('Add numbers', () => {
     const numbers = '1\n2,10';
 
     // when
-    const sum = addNumbers(numbers);
+    const sum = add(numbers);
 
     // then
     expect(sum).toEqual(13);
@@ -39,7 +39,7 @@ describe('Add numbers', () => {
     const numbers = '//8\n182';
 
     // when
-    const sum = addNumbers(numbers);
+    const sum = add(numbers);
 
     // then
     expect(sum).toEqual(3);
@@ -51,7 +51,7 @@ describe('Add numbers', () => {
 
     // then
     expect(() => {
-      addNumbers(numbers);
+      add(numbers);
     }).toThrow('negatives not allowed');
   });
 
@@ -60,7 +60,7 @@ describe('Add numbers', () => {
     const numbers = '1,-2,-5';
 
     // when
-    const sum = addNumbers(numbers);
+    const sum = add(numbers);
 
     // then
     expect(sum).toEqual([-2, -5]);
@@ -71,7 +71,7 @@ describe('Add numbers', () => {
     const numbers = '1,1002';
 
     // when
-    const sum = addNumbers(numbers);
+    const sum = add(numbers);
 
     // then
     expect(sum).toEqual(1);
@@ -82,7 +82,7 @@ describe('Add numbers', () => {
     const numbers = '//[***]\n1***20***3';
 
     // when
-    const sum = addNumbers(numbers);
+    const sum = add(numbers);
 
     // then
     expect(sum).toEqual(24);
@@ -93,7 +93,7 @@ describe('Add numbers', () => {
     const numbers = '//[**][6]\n1**263';
 
     // when
-    const sum = addNumbers(numbers);
+    const sum = add(numbers);
 
     // then
     expect(sum).toEqual(6);
