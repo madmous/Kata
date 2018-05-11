@@ -19,7 +19,7 @@ type CommaSeparator = ',';
 type NewLineDelimiter = '\n';
 type PrefixDelimiter = '//';
 
-type ReplaceIf = <T>(predicate: (value: T) => boolean) => (defaultValue: T) => (value: T) => T;
+type ReplaceIf = (predicate: (value: string) => boolean) => (defaultValue: string) => (value: string) => string;
 const replaceIf: ReplaceIf = predicate => defaultValue => value => {
   if (predicate(value)) {
     return value;
@@ -70,7 +70,7 @@ const replaceDelimitersIfNecessaryWith: ReplaceDelimitersIfNecessaryWith = comma
   if (startsWith(prefixDelimiter)(input)) {
     const [head, numbersInString] = split(newLineDelimiter)(input);
     const [_, maybeDelimiterWithBrackets] = split(prefixDelimiter)(head);
-    const delimiter = join('')(filter(isBracket)(maybeDelimiterWithBrackets));
+    const delimiter = flow(filter(isBracket), join(''))(maybeDelimiterWithBrackets);
 
     return map(replaceIf(isPresentIn(delimiter))(commaSeparator))(numbersInString);
   } else {
