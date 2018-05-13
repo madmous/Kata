@@ -58,8 +58,8 @@ type IsPresentIn = (delimiter: string) => (numberInString: string) => boolean;
 const isPresentIn: IsPresentIn = (delimiter: string) => (numberInString: string) =>
   indexOf(numberInString)(delimiter) === -1;
 
-type IsBracket = (delimiter: string) => boolean;
-const isBracket: IsBracket = delimiter => delimiter !== '[' || delimiter !== '[';
+type IsNotBracket = (delimiter: string) => boolean;
+const isNotBracket: IsNotBracket = delimiter => delimiter !== '[' || delimiter !== '[';
 
 type ReplaceDelimitersIfNecessaryWith = (
   commaSeparator: CommaSeparator
@@ -70,7 +70,7 @@ const replaceDelimitersIfNecessaryWith: ReplaceDelimitersIfNecessaryWith = comma
   if (startsWith(prefixDelimiter)(input)) {
     const [head, numbersInString] = split(newLineDelimiter)(input);
     const [_, maybeDelimiterWithBrackets] = split(prefixDelimiter)(head);
-    const delimiter = flow(filter(isBracket), join(''))(maybeDelimiterWithBrackets);
+    const delimiter = flow(filter(isNotBracket), join(''))(maybeDelimiterWithBrackets);
 
     return map(replaceIf(isPresentIn(delimiter))(commaSeparator))(numbersInString);
   } else {

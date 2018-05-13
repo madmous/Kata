@@ -14,7 +14,8 @@
       "node_modules",
       "**/*.spec.ts"
   ],
-  // "files": [
-  //   "node_modules/immutable/dist/immutable.d.ts"
-  // ]
+  "paths": [
+    "node_modules/folktale/index.d.ts"
+    // "node_modules/immutable/dist/immutable.d.ts"
+  ]
 }
