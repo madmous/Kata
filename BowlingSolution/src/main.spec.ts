@@ -1,4 +1,3 @@
-/** @flow */
 
 import scoreGame from './main';
 
@@ -10,30 +9,29 @@ describe('Add rolls', () => {
     { rolls: '13521', result: 12 },
   ].forEach(({ rolls, result }) => {
     it(`should calculate scores when there are no strikes or spares: ${rolls}`, () => {
-      //given
+      // given
 
-      //when
+      // when
       const score = scoreGame(rolls);
 
-      //then
+      // then
       expect(score).toEqual(result);
     });
   });
 
-  [
-    { rolls: '1-5-', result: 6 },
-    { rolls: '9-9-9-9-9-9-9-9-9-9-', result: 90 },
-  ].forEach(({ rolls, result }) => {
-    it(`should calculate scores when there is a miss: ${rolls}`, () => {
-      //given
+  [{ rolls: '1-5-', result: 6 }, { rolls: '9-9-9-9-9-9-9-9-9-9-', result: 90 }].forEach(
+    ({ rolls, result }) => {
+      it(`should calculate scores when there is a miss: ${rolls}`, () => {
+        // given
 
-      //when
-      const score = scoreGame(rolls);
+        // when
+        const score = scoreGame(rolls);
 
-      //then
-      expect(score).toEqual(result);
-    });
-  });
+        // then
+        expect(score).toEqual(result);
+      });
+    }
+  );
 
   [
     { rolls: '1/', result: 10 },
@@ -44,12 +42,12 @@ describe('Add rolls', () => {
     { rolls: '5/5/5/5/5/5/5/5/5/5/5', result: 150 },
   ].forEach(({ rolls, result }) => {
     it(`should calculate scores when there are spares: ${rolls}`, () => {
-      //given
+      // given
 
-      //when
+      // when
       const score = scoreGame(rolls);
 
-      //then
+      // then
       expect(score).toEqual(result);
     });
   });
@@ -69,12 +67,12 @@ describe('Add rolls', () => {
     { rolls: '1/35XXX458/X3/XX6', result: 189 },
   ].forEach(({ rolls, result }) => {
     it(`should calculate scores when there are strikes: ${rolls}`, () => {
-      //given
+      // given
 
-      //when
+      // when
       const score = scoreGame(rolls);
 
-      //then
+      // then
       expect(score).toEqual(result);
     });
   });
