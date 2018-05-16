@@ -38,20 +38,6 @@ import type { Id } from '@fluo/tech/flow';
 import type { Car } from '../../../../../../cars';
 ```
 
-### Order alphabetically modules and imports from the same module
-
-**Bad:**
-```javascript
-import { updatePhoneNumberToDatabase, savePhoneNumberToDatabase } from '../../../../../bilan/src/main/loan-quote-requester/phoneNumber';
-import equivalenceCriteriaPerBank from '../../equivalence-criteria/equivalence-criteria';
-```
-
-**Good:**
-```javascript
-import equivalenceCriteriaPerBank from '../../equivalence-criteria/equivalence-criteria';
-import { savePhoneNumberToDatabase, updatePhoneNumberToDatabase } from '../../../../../bilan/src/main/loan-quote-requester/phoneNumber';
-```
-
 ### Do not use wildcards imports
 
 **Bad:**
@@ -80,7 +66,7 @@ export const computeEffectiveDate = rate => {}
 
 ## Objects
 
-### Create default objects and use the spread operator to override values
+### Create default objects and use the spread operator to override values (beware sm)
 
 **Bad:**
 ```javascript
@@ -105,7 +91,7 @@ const updatedUser = {
 
 ## Functions
 
-### Don't use boolean arguments and add logic in a function
+### Don't use boolean arguments and add logic in a function (find a better example)
 
 **Bad:**
 ```javascript
@@ -143,7 +129,7 @@ if (isNumberKeyPressed(keyCode)) {
 
 ## Error handling
 
-### A function throwing should be visible in its name
+### A function throwing should be visible in its name (find a better example: use a synchronous method)
 
 **Bad:**
 ```javascript
@@ -181,7 +167,7 @@ const fetchUserEmailOrThrow = async (id) => {
 
 ## Tests
 
-### Any domain objects must be created with a factory
+### Any domain object must be created with a factory (too early)
 
 **Bad:**
 ```javascript
