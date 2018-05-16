@@ -1,80 +1,49 @@
-import calculate, { extractDatas } from './main';
+import evaluate from './main';
 
 describe('RPN Calculator', () => {
-  it('should add a pair', () => {
-    // given
-    const input = '5 3 +';
+  [
+    { input: '5 3 +', expectedResult: 8 },
+    { input: '6 2 /', expectedResult: 3 },
+    { input: '5 2 - 7 +', expectedResult: 10 },
+    { input: '3 4 2 1 + x + 2 /', expectedResult: 7.5 },
+    { input: '3 5 8 x 7 + x', expectedResult: 141 },
+    { input: '1 2 + 4 x 5 + 3 -', expectedResult: 14 },
+    { input: '5 4 1 2 + x +', expectedResult: 17 },
+  ].forEach(({ input, expectedResult }) => {
+    it(`should correctly evaluate ${input}`, () => {
+      // given
 
-    // when
-    const result = calculate(input);
+      // when
+      const result = evaluate(input);
 
-    // then
-    expect(result).toEqual(8);
+      // then
+      expect(result).toEqual(expectedResult);
+    });
   });
 
-  it('should divide a pair', () => {
-    // given
-    const input = '6 2 /';
+  xit('should handle the square root operation', () => {
+      // given
+      const input = '9 SQRT';
 
-    // when
-    const result = calculate(input);
+      // when
+      const result = evaluate(input);
 
-    // then
-    expect(result).toEqual(3);
+      // then
+      expect(result).toEqual(3);
   });
 
-  it('should calculate when operand after values', () => {
-    // given
-    const input = '5 2 - 7 +';
+  [
+    { input: '5 3 4 2 9 1 MAX', expectedResult: 9 },
+    // { input: '4 5 MAX 1 2 MAX *', expectedResult: 10 },
+  ].forEach(({ input, expectedResult }) => {
+    xit('should handle the max operation', () => {
+      // given
 
-    // when
-    const result = calculate(input);
+      // when
+      const result = evaluate(input);
 
-    // then
-    expect(result).toEqual(10);
+      // then
+      expect(result).toEqual(expectedResult);
   });
-
-  it('should calculate when operand after values', () => {
-    // given
-    const input = '3 4 2 1 + x + 2 /';
-
-    // when
-    const result = calculate(input);
-
-    // then
-    expect(result).toEqual(7.5);
-  });
-
-  it('should calculate when operand after values', () => {
-    // given
-    const input = '3 5 8 x 7 + x';
-
-    // when
-    const result = calculate(input);
-
-    // then
-    expect(result).toEqual(141);
-  });
-
-  it('should calculate when operand after values', () => {
-    // given
-    const input = '1 2 + 4 x 5 + 3 -';
-
-    // when
-    const result = calculate(input);
-
-    // then
-    expect(result).toEqual(14);
-  });
-
-  it('should calculate when operand after values', () => {
-    // given
-    const input = '5 4 1 2 + x +';
-
-    // when
-    const result = calculate(input);
-
-    // then
-    expect(result).toEqual(17);
   });
 });
