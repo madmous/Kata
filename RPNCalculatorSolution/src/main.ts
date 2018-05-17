@@ -1,39 +1,57 @@
-import { dropRight, flow, head, reduce, split, takeRight } from 'lodash/fp';
+import { dropRight, flow, head, indexOf, reduce, split, takeRight } from 'lodash/fp';
 
 type Operation = (a: number, b: number) => number;
 
-const sum: Operation = (a, b) => a + b;
-
-const difference: Operation = (a, b) => a - b;
-
-const multiply: Operation = (a, b) => a * b;
-
-const divide: Operation = (a, b) => a / b;
+type OperationSymbol = '+' | '/' | '-' | 'x';
 
 type OperationBySymbol = { [k: string]: Operation };
 
 const operationBySymbol: OperationBySymbol = {
-  '+': sum,
-  '-': difference,
-  '/': divide,
-  'x': multiply,
+  '+': (a, b) => a + b,
+  '-': (a, b) => a - b,
+  '/': (a, b) => a / b,
+  x: (a, b) => a * b
 };
 
-type Execute = (acc: number[], current: string) => number[];
-const execute: Execute = (acc, current) => {
-  const value = parseInt(current, 10);
+const operationSymbols: OperationSymbol[] = ['+', '/', '-', 'x'];
 
-  if (isNaN(value)) {
-    const operation = operationBySymbol[current];
-    const [first, second] = takeRight(2)(acc);
-    const sumLast2 = operation(first, second);
-    return [...dropRight(2)(acc), sumLast2];
+type CalculateOperation = (acc: number[]) => (current: string) => number;
+const calculateOperation: CalculateOperation = acc => current => {
+  const [first, second] = takeRight(2)(acc);
+
+  return operationBySymbol[current](first, second);
+};
+
+type GetNextAcc =  (acc: number[]) => (current: string) => number[];
+const getNextAcc: GetNextAcc = acc => current => {
+  if (isOperationSymbol(current)) {
+    return dropRight(2)(acc);
   } else {
-    return [...acc, value];
+    return acc;
   }
 };
 
-type Calculate = (input: string) => number;
-const calculate: Calculate = input => flow(split(' '), reduce(execute)([]), head)(input);
+type GetNextValue =  (acc: number[]) => (current: string) => number;
+const getNextValue: GetNextValue = acc => current => {
+  if (isOperationSymbol(current)) {
+    return calculateOperation(acc)(current);
+  } else {
+    return parseInt(current, 10);
+  }
+};
 
-export { calculate as default };
+type IsOperationSymbol = (value: string) => boolean;
+const isOperationSymbol: IsOperationSymbol = value => indexOf(value)(operationSymbols) !== -1;
+
+type CalculateOperations = (acc: number[], current: string) => number[];
+const calculateOperations: CalculateOperations = (acc, current) => {
+  const nextAcc = getNextAcc(acc)(current);
+  const nextValue = getNextValue(acc)(current);
+
+  return [...nextAcc, nextValue];
+};
+
+type Evaluate = (input: string) => number;
+const evaluate: Evaluate = input => flow(split(' '), reduce(calculateOperations)([]), head)(input);
+
+export { evaluate as default };
