@@ -3,6 +3,17 @@
 import organizeImports from './main';
 
 describe('Organize imports', () => {
+  it('should return an empty string when there are no import', () => {
+    //given
+    const input = '';
+
+    //when
+    const organizedImports = organizeImports(input);
+
+    //then
+    expect(organizedImports).toEqual('');
+  });
+
   it('should return the same import when there is only one import', () => {
     //given
     const input = `import KoaRouter from 'koa-router';`;
@@ -14,7 +25,7 @@ describe('Organize imports', () => {
     expect(organizedImports).toEqual(`import KoaRouter from 'koa-router';`);
   });
 
-  it('should flatten imports on multiple lines', () => {
+  it('should flatten an import written on multiple lines', () => {
     //given
     const input = `import {
 logger
@@ -27,7 +38,7 @@ logger
     expect(organizedImports).toEqual(`import {logger} from 'winston';`);
   });
 
-  xit('should flatten imports on multiple lines when there are tabulations', () => {
+  it('should flatten an import written on multiple lines when there are tabulations', () => {
     //given
     const input = `import {
   logger
@@ -55,7 +66,7 @@ import uuid from 'uuid';
 import logger from 'winston';`);
   });
 
-  it('should sort imports when there are local modules', () => {
+  it('should sort imports when there are only local modules', () => {
     //given
     const input = `import { contactInfo } from '../contact';
 import { carInfo } from '../cars';`;
