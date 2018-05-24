@@ -21,7 +21,7 @@ describe('Add rolls', () => {
 
   [{ rolls: '1-5-', result: 6 }, { rolls: '9-9-9-9-9-9-9-9-9-9-', result: 90 }].forEach(
     ({ rolls, result }) => {
-      it(`should calculate scores when there is a miss: ${rolls}`, () => {
+      it(`should calculate scores when there are misses: ${rolls}`, () => {
         // given
 
         // when
