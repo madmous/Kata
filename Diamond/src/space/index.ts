@@ -36,11 +36,15 @@ export const addOuterSpaces: AddOuterSpaces = rows => row =>
 
 // UTILS
 
+type findDiamondSizeFromRows = (rows: Row[]) => number;
+const findDiamondSizeFromRows: findDiamondSizeFromRows = rows => head(rows).length;
+
+/*
+** I prefer not to use lodash flip and just flip needed functions them whenever it is needed
+*/
+
 type FlippedPadStart = (char: string) => (length: number) => string;
 const flippedPadStart: FlippedPadStart = char => length => padStart(length)(char);
 
 type FlippedPad = (char: string) => (length: number) => string;
 const flippedPad: FlippedPad = char => length => pad(length)(char);
-
-type findDiamondSizeFromRows = (rows: Row[]) => number;
-const findDiamondSizeFromRows: findDiamondSizeFromRows = rows => head(rows).length;
