@@ -1,8 +1,6 @@
-import { range } from 'lodash';
-import { concat, drop, fill, filter, flow, head, join, pad, sum } from 'lodash/fp';
+import { flow } from 'lodash/fp';
 
-import isA, { getPreviousLetterFrom } from '../letter/index';
-import createInnerSpaces from '../space/index';
+import isA, { addOuterSpaces, createInnerSpacesFor } from '../space/index';
 
 // TYPE(S)
 
@@ -15,7 +13,7 @@ const createRow: CreateRow = letter => {
   if (isA(letter)) {
     return letter;
   } else {
-    return letter + createInnerSpaces(letter) + letter;
+    return letter + createInnerSpacesFor(letter) + letter;
   }
 };
 
@@ -28,23 +26,19 @@ export const addRemainingRows: AddRemainingRows = letter => rows => {
   if (isA(letter)) {
     return rows;
   } else {
-    const nextLetter = getPreviousLetterFrom(letter);
+    const nextLetter = getPrevious(letter);
     const nextRows = toNextRows(nextLetter)(rows);
 
     return addRemainingRows(nextLetter)(nextRows);
   }
 };
 
+type GetPrevious = (letter: string) => string;
+const getPrevious: GetPrevious = letter => String.fromCharCode(letter.charCodeAt(0) - 1);
+
 type ToNextRows = (letter: string) => (rows: Row[]) => Row[];
 const toNextRows: ToNextRows = letter => rows => {
   const row = flow(createRow, addOuterSpaces(rows))(letter);
 
   return [row, ...rows, row];
-};
-
-type AddOuterSpaces = (rows: Row[]) => (row: Row) => Row;
-const addOuterSpaces: AddOuterSpaces = rows => row => {
-  const rowLength = head(rows).length;
-
-  return pad(rowLength)(row);
 };

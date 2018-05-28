@@ -1,5 +1,4 @@
-import { range } from 'lodash';
-import { concat, drop, fill, filter, flow, join, sum } from 'lodash/fp';
+import { flow, join } from 'lodash/fp';
 
 import createRow, { addRemainingRows } from './row/index';
 
@@ -15,8 +14,6 @@ const createDiamond: CreateDiamond = letter =>
   flow(createDiamondBase, addRemainingRows(letter), join('\n'))(letter);
 
 export default createDiamond;
-
-// REST
 
 type CreateDiamondBase = (letter: string) => Base;
 const createDiamondBase: CreateDiamondBase = letter => [createRow(letter)];

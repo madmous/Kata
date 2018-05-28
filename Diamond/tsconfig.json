@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+      "noUnusedLocals": true,
       "module": "system",
       "noImplicitAny": true,
       "removeComments": true,
