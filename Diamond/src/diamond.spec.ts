@@ -22,8 +22,8 @@ describe('Diamond bottom row ', () => {
       const diamond = createDiamond(letter);
 
       // then
-      const firstLetter = trim(last(split('\n')(diamond)));
-      expect(firstLetter).toEqual('A');
+      const lastLetter = trim(last(split('\n')(diamond)));
+      expect(lastLetter).toEqual('A');
     });
   });
 });
