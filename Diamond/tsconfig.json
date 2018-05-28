@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+      "moduleResolution": "node",
       "noUnusedLocals": true,
       "module": "system",
       "noImplicitAny": true,

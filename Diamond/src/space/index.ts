@@ -1,7 +1,7 @@
 import { range } from 'lodash';
 import { flow, head, pad, padStart, sum } from 'lodash/fp';
 
-import { Row } from '../row/index';
+import { Row } from '../row';
 
 // TYPE(S)
 

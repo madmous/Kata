@@ -1,6 +1,6 @@
 import { flow } from 'lodash/fp';
 
-import isA, { addOuterSpaces, createInnerSpacesFor } from '../space/index';
+import isA, { addOuterSpaces, createInnerSpacesFor } from '../space';
 
 // TYPE(S)
 

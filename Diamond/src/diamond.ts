@@ -1,6 +1,6 @@
 import { flow, join } from 'lodash/fp';
 
-import createRow, { addRemainingRows } from './row/index';
+import createRow, { addRemainingRows } from './row';
 
 // TYPE(S)
 
