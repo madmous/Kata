@@ -40,7 +40,7 @@ type findDiamondSizeFromRows = (rows: Row[]) => number;
 const findDiamondSizeFromRows: findDiamondSizeFromRows = rows => head(rows).length;
 
 /*
-** I prefer not to use lodash flip and just flip needed functions them whenever it is needed
+** I prefer not to use lodash flip and just flip whenever it is needed
 */
 
 type FlippedPadStart = (char: string) => (length: number) => string;
