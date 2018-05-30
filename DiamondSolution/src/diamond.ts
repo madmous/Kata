@@ -4,8 +4,8 @@ type Diamond = string;
 
 type MakeDiamondWith = (letter: string) => Diamond;
 const makeDiamondWith: MakeDiamondWith = letter => {
-  if (letter === 'A') {
-    return 'A';
+  if (isA(letter)) {
+    return letter;
   } else {
     const letters = createVerticalLettersFrom(letter);
 
@@ -28,12 +28,14 @@ const createSymetry: CreateSymetry = rows => flow(reverse, tail, concat(rows))(r
 
 type CreateRow = (spaces: number) => (letter: string) => string;
 const createRow: CreateRow = spaces => letter => {
-  if (letter === 'A') {
-    return pad(spaces)('A');
+  if (isA(letter)) {
+    return pad(spaces)(letter);
   } else {
     return pad(spaces)(letter + createInnerSpaces(letter) + letter);
   }
 };
+
+const isA = (letter: string) => letter === 'A';
 
 type CreateInnerSpaces = (letter: string) => string;
 const createInnerSpaces: CreateInnerSpaces = letter =>
