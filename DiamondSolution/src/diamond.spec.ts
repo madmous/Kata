@@ -1,45 +1,205 @@
-import { head, last, split, trim } from 'lodash/fp';
+import {
+  asciichar,
+  bless,
+  check,
+  checkForall,
+  forall,
+  generator,
+  property,
+  random,
+  record,
+  shrink
+} from 'jsverify';
+import { isEqual } from 'lodash';
+import {
+  every,
+  filter,
+  flatMap,
+  flow,
+  head,
+  includes,
+  join,
+  last,
+  map,
+  range,
+  reverse,
+  size,
+  split,
+  tail,
+  take,
+  takeRightWhile,
+  takeWhile,
+  trim,
+  uniq
+} from 'lodash/fp';
 
-import createDiamond from './diamond';
+import makeDiamondWith, { createVerticalLettersFrom } from './diamond';
 
-describe('Diamond top row ', () => {
-  [{ letter: 'A' }, { letter: 'B' }, { letter: 'C' }].forEach(({ letter }) => {
-    it('should always be "A"', () => {
-      // when
-      const diamond = createDiamond(letter);
+describe('DiamondProperty', () => {
+  const checkOptions = {
+    quiet: true,
+    tests: 26
+  };
 
-      // then
-      const firstLetter = trim(head(split('\n')(diamond)));
-      expect(firstLetter).toEqual('A');
-    });
+  it('Non empty', () => {
+    const prop = check(
+      forall(arbLetter(), letter => {
+        const diamond = makeDiamondWith(letter);
+
+        return size(diamond) !== 0;
+      }),
+      checkOptions
+    );
+
+    expect(prop).toBe(true);
+  });
+
+  it('First row contains A', () => {
+    const prop = check(
+      forall(arbLetter(), letter => {
+        const diamond = makeDiamondWith(letter);
+
+        return flow(getFirstRow, trim)(diamond) === 'A';
+      }),
+      checkOptions
+    );
+
+    expect(prop).toBe(true);
+  });
+
+  it('Last row contains A', () => {
+    const prop = check(
+      forall(arbLetter(), letter => {
+        const diamond = makeDiamondWith(letter);
+
+        return flow(getLastRow, trim)(diamond) === 'A';
+      }),
+      checkOptions
+    );
+
+    expect(prop).toBe(true);
+  });
+
+  it('Rows must contain the correct letters, in the correct order', () => {
+    const prop = check(
+      forall(arbLetter(), letter => {
+        const diamond = makeDiamondWith(letter);
+
+        // not happy with the use of a function from production code
+        const actual = createVerticalLettersFrom(letter);
+
+        const expectToEqual = (actual: string[]) => (expected: string[]) =>
+          isEqual(actual, expected);
+
+        return flow(
+          getRows,
+          flatMap(keepUniqueLetters), // flatmap not typed correctly ??
+          filter(isSpace),
+          expectToEqual(actual)
+        )(diamond);
+      }),
+      checkOptions
+    );
+
+    expect(prop).toBe(true);
+  });
+
+  it("Diamond is as wide as it's high", () => {
+    const prop = check(
+      forall(arbLetter(), letter => {
+        const diamond = makeDiamondWith(letter);
+
+        const rows = getRows(diamond);
+        const expectRowLengthToEqualLengthOf = (rows: string[]) => (row: string) =>
+          size(row) === size(rows);
+
+        return every(expectRowLengthToEqualLengthOf(rows))(rows);
+      }),
+      checkOptions
+    );
+
+    expect(prop).toBe(true);
+  });
+
+  it('All rows except top and bottom have two identical letters', () => {
+    const prop = check(
+      forall(arbLetter(), letter => {
+        const diamond = makeDiamondWith(letter);
+
+        const expectLetterCountToBe2Per = (row: string) => size(removeSpaces(row)) === 2;
+
+        return flow(getRows, removeHeadAndLast, every(expectLetterCountToBe2Per))(diamond);
+      }),
+      checkOptions
+    );
+
+    expect(prop).toBe(true);
+  });
+
+  it('Rows must have a symmetric contour', () => {
+    const prop = check(
+      forall(arbLetter(), letter => {
+        const diamond = makeDiamondWith(letter);
+
+        const expectSpacesToBeEqual = (row: string) =>
+          isEqual(getLeadingSpaces(row), getTrailingSpaces(row));
+
+        return flow(getRows, every(expectSpacesToBeEqual))(diamond);
+      }),
+      checkOptions
+    );
+
+    expect(prop).toBe(true);
+  });
+
+  it('Lower left space is a triangle', () => {
+    const prop = check(
+      forall(arbLetter(), letter => {
+        const diamond = makeDiamondWith(letter);
+
+        const expectLowerLeftSpacesToBeOrdered = (lowerLeftSpaces: number[]) =>
+          isEqual(lowerLeftSpaces, range(1, size(lowerLeftSpaces) + 1));
+
+        return flow(getLowerLeftSpaces(letter), expectLowerLeftSpacesToBeOrdered)(diamond);
+      }),
+      checkOptions
+    );
+
+    expect(prop).toBe(true);
   });
 });
 
-describe('Diamond bottom row ', () => {
-  [{ letter: 'A' }, { letter: 'B' }, { letter: 'C' }].forEach(({ letter }) => {
-    it('should always be "A"', () => {
-      // when
-      const diamond = createDiamond(letter);
-
-      // then
-      const lastLetter = trim(last(split('\n')(diamond)));
-      expect(lastLetter).toEqual('A');
-    });
+const arbLetter = () =>
+  bless({
+    generator: generator.bless(() => String.fromCharCode(random(65, 90))),
+    show: val => val,
+    shrink: shrink.noop
   });
-});
 
-describe('Diamond shape', () => {
-  [
-    { letter: 'A', expectedDiamond: 'A' },
-    { letter: 'B', expectedDiamond: ' A \nB B\n A ' },
-    { letter: 'C', expectedDiamond: '  A  \n B B \nC   C\n B B \n  A  ' }
-  ].forEach(({ letter, expectedDiamond }) => {
-    it(`should be "${expectedDiamond}" when the letter is "${letter}"`, () => {
-      // when
-      const diamond = createDiamond(letter);
+const getRows = (diamond: string) => split('\n')(diamond);
 
-      // then
-      expect(diamond).toEqual(expectedDiamond);
-    });
-  });
-});
+const removeHeadAndLast = (rows: string[]) => take(rows.length - 2)(tail(rows));
+
+const getFirstRow = (diamond: string) => head(getRows(diamond));
+
+const getLastRow = (diamond: string) => last(getRows(diamond));
+
+const removeSpaces = (row: string) => join('')(split(' ')(row));
+
+const getLeadingSpaces = (row: string) => takeWhile((char: string) => char === ' ')(row);
+
+const getTrailingSpaces = (row: string) => takeRightWhile((char: string) => char === ' ')(row);
+
+const keepUniqueLetters = (row: string) => uniq(trim(row));
+
+const isSpace = (v: string) => v !== ' ';
+
+const getLowerLeftSpaces = (letter: string) => (diamond: string) =>
+  flow(
+    getRows,
+    takeRightWhile((row: string) => {
+      return !includes(letter)(row);
+    }),
+    map(getLeadingSpaces),
+    map(size)
+  )(diamond);
