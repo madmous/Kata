@@ -1,0 +1,40 @@
+{
+  "name": "mine-sweeper",
+  "version": "0.0.0",
+  "engineStrict": true,
+  "engines": {
+    "node": ">=8.9"
+  },
+  "devDependencies": {
+    "@types/jest": "^22.2.3",
+    "@types/lodash": "^4.14.108",
+    "jest": "^22.4.3",
+    "jsverify": "^0.8.3",
+    "ts-jest": "^22.4.4",
+    "tslint": "^5.10.0"
+  },
+  "scripts": {
+    "lint": "tslint -c tslint.json 'src/**/*.{ts,tsx}'",
+    "pretest": "npm run lint",
+    "test": "npm run test-only",
+    "test-only": "jest --coverage",
+    "test:watch": "jest --watch"
+  },
+  "license": "MIT",
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "spec.(ts|tsx|js)$"
+  },
+  "dependencies": {
+    "lodash": "^4.17.5",
+    "moment": "^2.21.0",
+    "typescript": "^2.8.3"
+  }
+}
