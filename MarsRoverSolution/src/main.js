@@ -1,4 +1,5 @@
 /** @flow */
+import { some } from 'lodash/fp';
 
 export type Game = Array<'r' | 'o' | ' '>[];
 
@@ -101,7 +102,7 @@ const moveRover: MoveRover = (world, command) => {
   } else {
     return {
       coordinate: nextCoordinate,
-    }; 
+    };
   }
 };
 
@@ -112,7 +113,7 @@ const getOrientation: GetOrientation = command => {
   } else {
     return -1;
   }
-}
+};
 
 type NextCoordinateValue = (
   nextCoordinate: number,
@@ -126,7 +127,12 @@ type RotateRover = (
   command: RotateCommand
 ) => { direction: Direction };
 const rotateRover: RotateRover = (world, command) => {
-  const { rover: { direction, coordinate: { x, y } } } = world;
+  const {
+    rover: {
+      direction,
+      coordinate: { x, y },
+    },
+  } = world;
   const nextDirection = {
     N: {
       l: 'W',
@@ -158,5 +164,5 @@ type IsRoverOnObstacle = (
 const isRoverOnObstacle: IsRoverOnObstacle = ({ x, y }, obstacles) => {
   const sameCoordinate = obs => obs.x === x && obs.y === y;
 
-  return obstacles.find(sameCoordinate) !== undefined;
+  return some(sameCoordinate)(obstacles);
 };
