@@ -1,13 +1,9 @@
 import {
-  asciichar,
   bless,
   check,
-  checkForall,
   forall,
   generator,
-  property,
   random,
-  record,
   shrink
 } from 'jsverify';
 import { isEqual } from 'lodash';
@@ -22,7 +18,6 @@ import {
   last,
   map,
   range,
-  reverse,
   size,
   split,
   tail,
@@ -93,7 +88,8 @@ describe('DiamondProperty', () => {
 
         return flow(
           getRows,
-          flatMap(keepUniqueLetters), // flatmap not typed correctly ??
+          flatMap(keepUniqueLetters),
+          join(''),
           filter(isSpace),
           expectToEqual(actual)
         )(diamond);
