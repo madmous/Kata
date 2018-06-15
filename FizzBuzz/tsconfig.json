@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+      "moduleResolution": "node",
+      "noUnusedLocals": true,
+      "module": "system",
+      "noImplicitAny": true,
+      "removeComments": true,
+      "preserveConstEnums": true,
+      "outFile": "../../built/local/tsc.js",
+      "sourceMap": true,
+      "target": "es6"
+  },
+  "include": [
+      "src/**/*"
+  ],
+  "exclude": [
+      "node_modules",
+      "**/*.spec.ts"
+  ],
+  "paths": [
+    "node_modules/folktale/index.d.ts"
+    // "node_modules/immutable/dist/immutable.d.ts"
+  ]
+}
