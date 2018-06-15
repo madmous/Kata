@@ -54,12 +54,10 @@ describe('BowlingProperty', () => {
     expect(prop).toBe(true);
   });
 
-  it('Frame score on the tenth frame is the sum of all rolls', () => {
+  xit('Frame score on the tenth frame is the sum of all rolls', () => {
     const prop = check(
-      forall(
-        strikeRollsOnTenthFrame(),
-        ({ frames }) =>
-          score(frames).every((score: number) => score === 10)
+      forall(strikeRollsOnTenthFrame(), ({ frames }) =>
+        score(frames).every((score: number) => score === 10)
       ),
       checkOptions
     );
@@ -133,7 +131,7 @@ const strikeRollsOnTenthFrame = () =>
 
       return {
         // firstRoll,
-        frames: `${firstRoll}${secondRoll}${potentialThirdRoll}`,
+        frames: `${firstRoll}${secondRoll}${potentialThirdRoll}`
         // potentialThirdRoll,
         // secondRoll,
       };

@@ -1,28 +1,21 @@
-import { concat, drop, flow, head, last, size, split, sum, tail, take } from 'lodash/fp';
+import { concat, drop, flow, last, reduce, size, split, sum, take } from 'lodash/fp';
 
 type Score = (input: string) => number[];
 const score: Score = input =>
   flow(
-    split(''),
-    parseInput([]),
+    parseInput,
     calculateFrameScores([])
   )(input);
 
 export default score;
 
-type ParseInput = (parsedInput: number[]) => (input: string[]) => number[];
-const parseInput: ParseInput = parsedInput => input => {
-  if (size(input) === 0) {
-    return parsedInput;
-  } else {
-    const nextParsedInput = toNextParsedInput(parsedInput)(head(input));
+const parseInput = (input: string) =>
+  flow(
+    split(''),
+    reduce(toNumber)([])
+  )(input);
 
-    return parseInput(nextParsedInput)(tail(input));
-  }
-};
-
-type ToNextParsedInput = (parsedInput: number[]) => (char: string) => number[];
-const toNextParsedInput: ToNextParsedInput = parsedInput => char => {
+const toNumber = (parsedInput: number[], char: string) => {
   switch (char) {
     case 'x':
       return [...parsedInput, 10];
