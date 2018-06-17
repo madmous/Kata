@@ -1,0 +1,6 @@
+phoityne.log
+.stack-work/
+BowlingHaskell.cabal
+node_modules
+launch.json
+tasks.json
