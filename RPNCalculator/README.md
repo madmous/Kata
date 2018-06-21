@@ -2,7 +2,7 @@ An RPN calculator computes expressions written in Reverse Polish Notation.
 
 ## Rules
 
-1. A number X, in wich case the value of the expression is that of X.
+1. A number X, in which case the value of the expression is that of X.
 1. A sequence of form E1 E2 OP where E1 and E2 are RPN expressions and OP is an arithmetic operation.
 
 ## Samples
