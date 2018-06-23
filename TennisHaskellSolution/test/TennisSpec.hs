@@ -29,7 +29,7 @@ spec =
       score [(True, False), (True, False), (True, False), (False, True), (False, True), (False, True)] `shouldBe` "Deuce"
 
     it "Any player scoring previous to a deuce has the advantage" $ do
-      score [(True, False), (True, False), (True, False), (False, True), (False, True), (False, True), (False, True)] `shouldBe` "Advantage Player 2"
+      head (words (score [(True, False), (True, False), (True, False), (False, True), (False, True), (False, True), (False, True)])) `shouldBe` "Advantage"
     
     it "Any player scoring previous to an advantage for the other player brings back the score to deuce" $ do
       score [(True, False), (True, False), (True, False), (False, True), (False, True), (False, True), (True, False), (False, True)] `shouldBe` "Deuce"

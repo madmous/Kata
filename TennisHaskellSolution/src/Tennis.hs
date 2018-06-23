@@ -7,12 +7,12 @@ data Score = Love | Fifteen | Thirty | Forty | Game
   deriving (Eq, Ord, Show, Enum) 
 
 score :: [(Bool, Bool)] -> String
-score = generateOutput . head . parse
+score = generateOutput . parse
 
-parse :: [(Bool, Bool)] -> [(Score, Score)]
-parse = foldl reduceFunction [(Love, Love)]
+parse :: [(Bool, Bool)] -> (Score, Score)
+parse = head . foldl foldFunction [(Love, Love)]
   where
-    reduceFunction [(playerOneScore, playerTwoScore)] (hasPlayerOneScored, hasPlayerTwoScored) 
+    foldFunction [(playerOneScore, playerTwoScore)] (hasPlayerOneScored, hasPlayerTwoScored) 
       | playerOneScore == Forty && playerTwoScore == Game && hasPlayerOneScored = [(playerOneScore, pred playerTwoScore)] 
       | playerOneScore == Game && playerTwoScore == Forty && hasPlayerTwoScored = [(pred playerOneScore, playerTwoScore)] 
       | hasPlayerOneScored = [(succ playerOneScore, playerTwoScore)] 
