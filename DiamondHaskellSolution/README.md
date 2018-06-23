@@ -1,1 +1,1 @@
-# DiamondHaskell
+../Diamond/README.md
