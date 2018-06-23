@@ -1,8 +1,6 @@
 phoityne.log
 .stack-work/
-BowlingHaskell.cabal
-DiamondHaskell.cabal
-FizzBuzzHaskell.cabal
+*.cabal
 node_modules
 launch.json
 tasks.json
