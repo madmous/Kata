@@ -1,1 +1,1 @@
-Bowling/README.md
+../Bowling/README.md
