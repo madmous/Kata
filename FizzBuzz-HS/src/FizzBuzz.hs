@@ -2,7 +2,7 @@ module FizzBuzz (generateOutput)
   where
 
 generateOutput :: [Integer] -> String
-generateOutput inputs = unlines $ map parse inputs
+generateOutput = unlines . map parse
 
 parse :: Integer -> String
 parse v
