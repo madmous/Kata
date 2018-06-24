@@ -25,7 +25,8 @@ import {
   takeRightWhile,
   takeWhile,
   trim,
-  uniq
+  uniq,
+  words
 } from 'lodash/fp';
 
 import makeDiamondWith, { createVerticalLettersFrom } from './diamond';
@@ -180,7 +181,7 @@ const getFirstRow = (diamond: string) => head(getRows(diamond));
 
 const getLastRow = (diamond: string) => last(getRows(diamond));
 
-const removeSpaces = (row: string) => join('')(split(' ')(row));
+const removeSpaces = (row: string) => words(row);
 
 const getLeadingSpaces = (row: string) => takeWhile((char: string) => char === ' ')(row);
 
@@ -193,9 +194,7 @@ const isSpace = (v: string) => v !== ' ';
 const getLowerLeftSpaces = (letter: string) => (diamond: string) =>
   flow(
     getRows,
-    takeRightWhile((row: string) => {
-      return !includes(letter)(row);
-    }),
+    takeRightWhile((row: string) => !includes(letter)(row)),
     map(getLeadingSpaces),
     map(size)
   )(diamond);

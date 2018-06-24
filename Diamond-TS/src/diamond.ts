@@ -1,58 +1,80 @@
-import { add, concat, flow, join, map, pad, range, reverse, tail } from 'lodash/fp';
+import { range } from 'lodash';
+import {
+  concat,
+  filter,
+  flow,
+  head,
+  initial,
+  join,
+  map,
+  nth,
+  pad,
+  range as curriedRange,
+  repeat,
+  reverse,
+  size,
+  tail,
+  zip
+} from 'lodash/fp';
 
-type Diamond = string;
-
-type MakeDiamondWith = (letter: string) => Diamond;
+type MakeDiamondWith = (letter: string) => string;
 const makeDiamondWith: MakeDiamondWith = letter => {
-  if (isA(letter)) {
-    return letter;
+  if (letter === 'A') {
+    return 'A';
   } else {
-    const letters = createVerticalLettersFrom(letter);
-
-    return flow(map(createRow(letters.length)), join('\n'))(letters);
+    const letters = enumerateLettersUpTo(letter);
+    const verticalLines = [...letters, ...reverse(initial(letters))];
+    return flow(
+      map(toRow(size(verticalLines))),
+      join('\n')
+    )(verticalLines);
   }
 };
 
 export default makeDiamondWith;
 
-type CreateVerticalLettersFrom = (letter: string) => string[];
-export const createVerticalLettersFrom: CreateVerticalLettersFrom = (letter: string) =>
-  flow(createCharactersUpto, map(fromCharCode), createSymetry)(letter);
+type EnumerateLettersUpTo = (letter: string) => string[];
+const enumerateLettersUpTo: EnumerateLettersUpTo = letter => {
+  const toString = (code: number) => String.fromCharCode(code);
+  const charCodesUpToLetter = curriedRange(65)(letter.charCodeAt(0) + 1);
+  return map(toString)(charCodesUpToLetter);
+};
 
-type CreateCharactersUpto = (letter: string) => number[];
-const createCharactersUpto: CreateCharactersUpto = letter =>
-  flow(charCodeAt, add(1), range(65))(letter);
-
-type CreateSymetry = (rows: string[]) => string[];
-const createSymetry: CreateSymetry = rows => flow(reverse, tail, concat(rows))(rows);
-
-type CreateRow = (spaces: number) => (letter: string) => string;
-const createRow: CreateRow = spaces => letter => {
-  if (isA(letter)) {
-    return pad(spaces)(letter);
+type ToRow = (width: number) => (letter: string) => string;
+const toRow: ToRow = width => letter => {
+  if (letter === 'A') {
+    return pad(width)('A');
   } else {
-    return pad(spaces)(letter + createInnerSpaces(letter) + letter);
+    const withInnerSpaces = letter + repeat(countInnerSpaces(letter))(' ') + letter;
+    return pad(width)(withInnerSpaces);
   }
 };
 
-const isA = (letter: string) => letter === 'A';
-
-type CreateInnerSpaces = (letter: string) => string;
-const createInnerSpaces: CreateInnerSpaces = letter =>
-  flow(charCodeAt, add(-65), calculateSpaces, flippedPad(' '))(letter);
-
-type CalculateSpaces = (index: number) => number;
-const calculateSpaces: CalculateSpaces = index => {
-  const ALPHABET_LETTER_COUNT = 26;
-  const letterSpaces = range(0)(ALPHABET_LETTER_COUNT);
-
-  return letterSpaces[index] + letterSpaces[index - 1];
+type CountInnerSpaces = (letter: string) => number;
+const countInnerSpaces: CountInnerSpaces = letter => {
+  const isLetterCharCodeIndex = ([alphabetIndex, _]: [number, number]) =>
+    alphabetIndex === letter.charCodeAt(0) - 65;
+  const innerSpacesByIndex = zip(range(0, 26))([0, ...range(1, 51, 2)]);
+  return flow(
+    filter(isLetterCharCodeIndex),
+    head,
+    nth(1)
+  )(innerSpacesByIndex);
 };
 
-// UTILS
+// TEST
 
-const fromCharCode = (code: number) => String.fromCharCode(code);
+type CreateVerticalLettersFrom = (letter: string) => string[];
+export const createVerticalLettersFrom: CreateVerticalLettersFrom = (letter: string) =>
+  flow(
+    enumerateLettersUpTo,
+    createSymetry
+  )(letter);
 
-const charCodeAt = (letter: string) => letter.charCodeAt(0);
-
-const flippedPad = (char: string) => (length: number) => pad(length)(char);
+type CreateSymetry = (rows: string[]) => string[];
+const createSymetry: CreateSymetry = rows =>
+  flow(
+    reverse,
+    tail,
+    concat(rows)
+  )(rows);

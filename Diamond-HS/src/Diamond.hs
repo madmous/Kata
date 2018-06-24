@@ -9,29 +9,24 @@ makeDiamondWith 'A' = "A"
 makeDiamondWith letter =
   let letters = ['A'..letter]
       verticalLines = letters ++ reverse (init letters)
-  in unlines $ map (createRow $ length verticalLines) verticalLines
+  in unlines $ map (toRow $ length verticalLines) verticalLines
 
-createRow :: Int -> Char -> String
-createRow width 'A' = 
-  let charactersCountPerLine = 1
-      outerSpacesCountToFill = 2
-      outerSpaces = createSpaces $ div (width - charactersCountPerLine) outerSpacesCountToFill
-  in outerSpaces ++ "A" ++ outerSpaces
-createRow width letter = 
-  let charactersCountPerLine = 2
-      outerSpacesCountToFill = 2
-      innerSpacesCount = countInnerSpaces letter
-      outerSpaces = createSpaces $ div (width - innerSpacesCount - charactersCountPerLine) outerSpacesCountToFill
-  in outerSpaces ++ [letter] ++ createSpaces innerSpacesCount ++ [letter] ++ outerSpaces
+toRow :: Int -> Char -> String
+toRow width 'A' = pad width "A"
+toRow width letter = 
+  let withInnerSpaces = [letter] ++ createSpaces (countInnerSpaces letter) ++ [letter]
+  in pad width withInnerSpaces
 
-countInnerSpaces :: Char -> Int
-countInnerSpaces char = 
-  let capitalACharacterCode = 65
-      index = ord char - capitalACharacterCode
-      innerSpacesByIndex = zip [0..25] (0:[1,3..])
-      getInnerSpaces (f,_) = f == index
-  in snd $ head $ filter getInnerSpaces innerSpacesByIndex
+pad :: Int -> String -> String
+pad width string = 
+  let outerSpaces = createSpaces $ div (width - length string) 2
+  in outerSpaces ++ string ++ outerSpaces
 
 createSpaces :: Int -> String
 createSpaces count = replicate count ' '
 
+countInnerSpaces :: Char -> Int
+countInnerSpaces char = 
+  let innerSpacesByIndex = zip [0..25] (0:[1,3..])
+      isLetterCharCodeIndex (alphabetIndex,_) = alphabetIndex == ord char - 65
+  in snd $ head $ filter isLetterCharCodeIndex innerSpacesByIndex
