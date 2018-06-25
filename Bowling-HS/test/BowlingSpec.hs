@@ -18,10 +18,10 @@ spec =
       score "------" `shouldBe` 0
 
     it "Frame score is the sum of the pins knocked down when player does not strike or spare" $ do
-      score "-9-9-9-9-9-9-9-9-9XXX" `shouldBe` (9 * 9) + 30
+      score "-9-9-9-9-9-9-9-9-9" `shouldBe` (9 * 9)
 
     it "Frame score is 10 plus the number of pins knocked down on the next throw when player spares" $ do
       score "5/5/5/5/5/5/5/5/5/5/" `shouldBe` ((10 + 5) * 9) + 10
 
     it "Frame score is 10 plus the number of pins knocked down on the next two throws when player strikes" $ do
-      score "XX" `shouldBe` 30
+      score "XXXXXXXXXXXX" `shouldBe` 300

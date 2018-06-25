@@ -9,56 +9,54 @@ data Frame = Strike | Spare Int | Simple Int Int
   
 score :: String -> Int
 score [] = 0
-score input = calculate . addIndexToFrames . parse $ input
+score input = calculate . zip [1..] . parse $ input
 
 parse :: String -> [Frame]
 parse [] = []
-parse ['X'] = [Strike]
-parse ['-'] = [Simple 0 0]
-parse [frame] = [Simple (digitToInt frame) 0]
 parse ('X':frames) = Strike : parse frames
 parse (frame:'/':frames) = (Spare $ digitToInt frame) : parse frames
+parse ['-'] = [Simple 0 0]
+parse [frame] = [Simple (digitToInt frame) 0]
 parse ('-':'-':frames) = Simple 0 0 : parse frames
 parse (frame:'-':frames) = Simple (digitToInt frame) 0 : parse frames
 parse ('-':frame:frames) = Simple 0 (digitToInt frame) : parse frames
 parse (frame1:frame2:frames) = Simple (digitToInt frame1) (digitToInt frame2) : parse frames
-
-addIndexToFrames :: [Frame] -> [(Int, Frame)]
-addIndexToFrames = zip [1..]
 
 calculate :: [(Int, Frame)] -> Int
 calculate [] = 0
 calculate [x] =
   case x of 
     (_, Simple roll1 roll2) -> roll1 + roll2
-    _ -> maximumScore
-  where maximumScore = 10
-calculate (frame1:frame2:frames) =
+    _ -> 10
+calculate [frame1, frame2] =
   case frame1 of 
-    (_, Simple roll1 roll2) -> roll1 + roll2 + calculate(frame2:frames)
-    (10, Spare _) -> maximumScore + calculate(frame2:frames)
-    (10, Strike) -> maximumScore + calculate(frame2:frames)
-    (11, Spare _) -> maximumScore + calculate(frame2:frames)
-    (11, Strike) -> maximumScore + calculate(frame2:frames)
-    (_, Spare _) -> maximumScore + bonusPointsWhen "Spare" frame2 + calculate(frame2:frames)
-    (_, Strike) -> maximumScore + bonusPointsWhen "Strike" frame2 + calculate(frame2:frames)
-  where maximumScore = 10
-
-bonusPointsWhen :: String -> (Int, Frame) -> Int
-bonusPointsWhen "Spare" frame = getOneRollFrom frame
-bonusPointsWhen "Strike" frame = getTwoRollsFrom frame
+    (_, Simple roll1 roll2) -> roll1 + roll2 + calculate [frame2]
+    (_, Spare _) -> 10 + getOneRollFrom frame2 + calculate [frame2]
+    (10, Strike) -> 10 + calculate [frame2]
+    (11, Strike) -> 10 + calculate [frame2]
+    (_, Strike) -> 10 + getTwoRollsFrom [frame2] + calculate [frame2]
+calculate (frame1:frame2:frame3:frames) =
+  case frame1 of 
+    (_, Simple roll1 roll2) -> roll1 + roll2 + calculate(frame2:frame3:frames)
+    (10, _) -> 10 + calculate(frame2:frame3:frames)
+    (11, _) -> 10 + calculate(frame2:frame3:frames)
+    (_, Spare _) -> 10 + getOneRollFrom frame2 + calculate(frame2:frame3:frames)
+    (_, Strike) -> 10 + getTwoRollsFrom [frame2,frame3] + calculate(frame2:frame3:frames)
 
 getOneRollFrom :: (Int, Frame) -> Int
 getOneRollFrom frame = 
   case frame of
     (_, Simple roll1 _) -> roll1
     (_, Spare roll1) -> roll1
-    (_, Strike) -> maximumScore
-  where maximumScore = 10
+    (_, Strike) -> 10
 
-getTwoRollsFrom :: (Int, Frame) -> Int
-getTwoRollsFrom frame = 
+getTwoRollsFrom :: [(Int, Frame)] -> Int
+getTwoRollsFrom [frame] = 
   case frame of
     (_, Simple roll1 roll2) -> roll1 + roll2
-    _ -> maximumScore
-  where maximumScore = 10
+    _ -> 10
+getTwoRollsFrom [frame, frame2] = 
+  case frame of
+    (_, Simple roll1 roll2) -> roll1 + roll2
+    (_, Spare _) -> 10
+    (_, Strike) -> 10 + getOneRollFrom frame2
