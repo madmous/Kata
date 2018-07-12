@@ -9,12 +9,12 @@ type GenerateOutput = (listLength: number) => string;
 const generateOutput: GenerateOutput = listLength => {
   return flow(
     range(1),
-    map(inputToWordIfNeeded),
+    map(toWordIfNeeded),
     join('\n')
   )(listLength + 1);
 };
 
-const inputToWordIfNeeded = (input: number) => {
+const toWordIfNeeded = (input: number) => {
   if (divisibleBy3And5(input)) {
     return FIZZ_BUZZ;
   } else if (divisibleBy(3)(input)) {
